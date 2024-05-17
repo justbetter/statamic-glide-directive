@@ -1,6 +1,6 @@
 {
-    "name": "justbetter/statamic-responsive",
-    "description": "Addon that adds a responsive blade directive",
+    "name": "justbetter/statamic-glide-directive",
+    "description": "Addon that adds a glide blade directive",
     "type": "package",
     "require": {
         "php": "^8.0|^8.1",
@@ -9,7 +9,7 @@
     },
     "autoload": {
         "psr-4": {
-            "JustBetter\\Responsive\\": "src/"
+            "JustBetter\\GlideDirective\\": "src/"
         }
     },
     "config": {
@@ -20,12 +20,12 @@
     },
     "extra": {
         "statamic": {
-            "name": "Statamic responsive blade directive",
-            "description": "Addon that adds a responsive blade directive"
+            "name": "Glide blade directive",
+            "description": "Addon that adds a Glide blade directive"
         },
         "laravel": {
             "providers": [
-                "JustBetter\\Responsive\\ServiceProvider"
+                "JustBetter\\GlideDirective\\ServiceProvider"
             ]
         }
     },
