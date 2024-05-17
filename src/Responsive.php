@@ -11,10 +11,7 @@ class Responsive
     {
         $image = $arguments[0];
         $image = get_class($image) === 'Statamic\Fields\Value' ? $image->value() : $image;
-
         $arguments = $arguments[1] ?? [];
-
-
 
         return view('statamic-glide-directive::image', [
             'image' => $image,
@@ -38,16 +35,16 @@ class Responsive
         $presets[$image->mimeType()] = '';
 
         foreach ($config as $preset => $data) {
-            $presets['webp'] .= Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp'])->fetch() . ' ' . $data['w'] . 'w,';
-            $presets[$image->mimeType()] .= Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url()])->fetch() . ' ' . $data['w'] . 'w,';
+            $presets['webp'] .= Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => 'crop_focal'])->fetch() . ' ' . $data['w'] . 'w,';
+            $presets[$image->mimeType()] .= Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch() . ' ' . $data['w'] . 'w,';
 
             if ($preset === 'placeholder') {
-                $presets['placeholder'] = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url()])->fetch();
+                $presets['placeholder'] = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch();
             }
         }
 
         if (!isset($presets['placeholder'])) {
-            $presets['placeholder'] = Statamic::tag('glide:data_url')->params(['preset' => collect($config)->keys()->first(), 'src' => $image->url()])->fetch();
+            $presets['placeholder'] = Statamic::tag('glide:data_url')->params(['preset' => collect($config)->keys()->first(), 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch();
         }
 
         return $presets;
