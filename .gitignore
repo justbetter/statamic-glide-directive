@@ -1,0 +1,5 @@
+composer.lock
+.DS_Store
+node_modules
+vendor
+.php_cs.cache

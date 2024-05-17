@@ -1,0 +1,45 @@
+{
+    "name": "justbetter/statamic-responsive",
+    "description": "Addon that adds a responsive blade directive",
+    "type": "package",
+    "require": {
+        "php": "^8.0|^8.1",
+        "laravel/framework": "*",
+        "statamic/cms": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "JustBetter\\Responsive\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pixelfear/composer-dist-plugin": true
+        }
+    },
+    "extra": {
+        "statamic": {
+            "name": "Statamic responsive blade directive",
+            "description": "Addon that adds a responsive blade directive"
+        },
+        "laravel": {
+            "providers": [
+                "JustBetter\\Responsive\\ServiceProvider"
+            ]
+        }
+    },
+    "authors": [
+        {
+            "name": "Bob",
+            "email": "bob@justbetter.nl",
+            "role": "Developer"
+        },
+        {
+            "name": "Kevin Meijer",
+            "email": "kevin@justbetter.nl",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "dev"
+}
