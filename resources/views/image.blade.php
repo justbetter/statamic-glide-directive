@@ -20,7 +20,7 @@
             <img
                 class="{{ $class }}"
                 src="{{ $presets['placeholder'] }}"
-                alt="{{ $alt }}"
+                alt="{{ $alt ?? $image->alt() }}"
                 width="{{ $image->width() }}"
                 height="{{ $image->height() }}"
                 onload="

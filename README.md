@@ -20,6 +20,11 @@ This package adds a blade directive. You can put a Asset in the blade directive 
 ])
 ```
 
+To allow the images to change on resize, add this include to your head in the layouts:
+```php
+@include('statamic-glide-directive::partials.head')
+```
+
 ## Config
 
 The package has some default config. By default it will use the presets defined in the config of this addon. If you've defined you're asset presets in the Statamic config, that will be used.
