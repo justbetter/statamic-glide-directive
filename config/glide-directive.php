@@ -15,6 +15,13 @@ return [
         'lg' => ['w' => 1280, 'h' => 1280, 'q' => 100, 'fit' => 'crop_focal'],
         'xl' => ['w' => 1440, 'h' => 1440, 'q' => 100, 'fit' => 'crop_focal'],
         '2xl' => ['w' => 1680, 'h' => 1680, 'q' => 100, 'fit' => 'crop_focal'],
+
+        'xs-h' => ['w' => 160, 'h' => 320, 'q' => 100, 'fit' => 'crop_focal'],
+        'sm-h' => ['w' => 320, 'h' => 480, 'q' => 100, 'fit' => 'crop_focal'],
+        'md-h' => ['w' => 480, 'h' => 768, 'q' => 100, 'fit' => 'crop_focal'],
+        'lg-h' => ['w' => 768, 'h' => 1280, 'q' => 100, 'fit' => 'crop_focal'],
+        'xl-h' => ['w' => 1280, 'h' => 1440, 'q' => 100, 'fit' => 'crop_focal'],
+        '2xl-h' => ['w' => 1440, 'h' => 1680, 'q' => 100, 'fit' => 'crop_focal'],
     ],
 
     // Configure which sources you would like to use.

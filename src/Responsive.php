@@ -42,36 +42,66 @@ class Responsive
             $presets[$image->mimeType()] = '';
         }
 
-        $index = 0;
+        $configPresets = self::getPresetsByRatio($image, $config);
 
-        foreach ($config as $preset => $data) {
+        $index = 0;
+        foreach ($configPresets as $preset => $data) {
             $size = $data['w'] . 'w';
 
-            if ($index < (count($config) - 1)) {
+            if ($index < (count($configPresets) - 1)) {
                 $size .= ', ';
             }
 
             if (self::canUseWebpSource()) {
-                $presets['webp'] .= Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => $data['crop'] ?? 'crop_focal'])->fetch() . ' ' . $size;
+                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                if ($glideUrl) {
+                    $presets['webp'] .= $glideUrl . ' ' . $size;
+                }
             }
 
             if (self::canUseMimeTypeSource()) {
-                $presets[$image->mimeType()] .= Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch() . ' ' . $size;
+                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                if ($glideUrl) {
+                    $presets[$image->mimeType()] .= $glideUrl . ' ' . $size;
+                }
             }
 
 
             if ($preset === 'placeholder') {
-                $presets['placeholder'] = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                if ($glideUrl) {
+                    $presets['placeholder'] = $glideUrl;
+                }
             }
 
             $index++;
         }
 
         if (!isset($presets['placeholder'])) {
-            $presets['placeholder'] = Statamic::tag('glide:data_url')->params(['preset' => collect($config)->keys()->first(), 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch();
+            $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => collect($configPresets)->keys()->first(), 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch();
+            $presets['placeholder'] = $glideUrl;
         }
 
         return $presets;
+    }
+
+    protected static function getPresetsByRatio(Asset $image, array $config): array
+    {
+        $ratio = $image->width() / $image->height();
+        $presets = collect($config);
+
+        // filter config based on aspect ratio
+        // if ratio < 1 get all presets with a height bigger than the width, else get all presets with width equal or bigger than the height.
+        if ($ratio < 0.999) {
+            $presets = $presets->filter(fn($preset, $key) => $preset['h'] > $preset['w']);
+            if ($presets->isNotEmpty() && isset($config['placeholder'])) {
+                $presets->prepend($config['placeholder'], 'placeholder');
+            }
+        } else {
+            $presets = $presets->filter(fn($preset, $key) => $key === 'placeholder' || $preset['w'] >= $preset['h']);
+        }
+
+        return $presets->isNotEmpty() ? $presets->toArray() : $config;
     }
 
     protected static function getAttributeBag(array $arguments): string
