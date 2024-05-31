@@ -15,10 +15,12 @@ class Responsive
 
         return view('statamic-glide-directive::image', [
             'image' => $image,
-            'presets' => Responsive::getPresets($image),
+            'presets' => self::getPresets($image),
+            'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
             'alt' => $arguments['alt'] ?? '',
-            'lazy' => $arguments['lazy'] ?? '',
+            'width' => $arguments['width'] ?? $image->width(),
+            'height' => $arguments['height'] ?? $image->height(),
         ]);
     }
 
@@ -31,22 +33,95 @@ class Responsive
         }
 
         $presets = [];
-        $presets['webp'] = '';
-        $presets[$image->mimeType()] = '';
 
-        foreach ($config as $preset => $data) {
-            $presets['webp'] .= Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => 'crop_focal'])->fetch() . ' ' . $data['w'] . 'w,';
-            $presets[$image->mimeType()] .= Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch() . ' ' . $data['w'] . 'w,';
+        if (self::canUseWebpSource()) {
+            $presets['webp'] = '';
+        }
+
+        if (self::canUseMimeTypeSource()) {
+            $presets[$image->mimeType()] = '';
+        }
+
+        $configPresets = self::getPresetsByRatio($image, $config);
+
+        $index = 0;
+        foreach ($configPresets as $preset => $data) {
+            $size = $data['w'] . 'w';
+
+            if ($index < (count($configPresets) - 1)) {
+                $size .= ', ';
+            }
+
+            if (self::canUseWebpSource()) {
+                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                if ($glideUrl) {
+                    $presets['webp'] .= $glideUrl . ' ' . $size;
+                }
+            }
+
+            if (self::canUseMimeTypeSource()) {
+                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                if ($glideUrl) {
+                    $presets[$image->mimeType()] .= $glideUrl . ' ' . $size;
+                }
+            }
+
 
             if ($preset === 'placeholder') {
-                $presets['placeholder'] = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch();
+                $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                if ($glideUrl) {
+                    $presets['placeholder'] = $glideUrl;
+                }
             }
+
+            $index++;
         }
 
         if (!isset($presets['placeholder'])) {
-            $presets['placeholder'] = Statamic::tag('glide:data_url')->params(['preset' => collect($config)->keys()->first(), 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch();
+            $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => collect($configPresets)->keys()->first(), 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch();
+            $presets['placeholder'] = $glideUrl;
         }
 
         return $presets;
+    }
+
+    protected static function getPresetsByRatio(Asset $image, array $config): array
+    {
+        $ratio = $image->width() / $image->height();
+        $presets = collect($config);
+
+        // filter config based on aspect ratio
+        // if ratio < 1 get all presets with a height bigger than the width, else get all presets with width equal or bigger than the height.
+        if ($ratio < 0.999) {
+            $presets = $presets->filter(fn($preset, $key) => $preset['h'] > $preset['w']);
+            if ($presets->isNotEmpty() && isset($config['placeholder'])) {
+                $presets->prepend($config['placeholder'], 'placeholder');
+            }
+        } else {
+            $presets = $presets->filter(fn($preset, $key) => $key === 'placeholder' || $preset['w'] >= $preset['h']);
+        }
+
+        return $presets->isNotEmpty() ? $presets->toArray() : $config;
+    }
+
+    protected static function getAttributeBag(array $arguments): string
+    {
+        $excludedAttributes = ['src', 'class', 'alt', 'width', 'height', 'onload'];
+
+        return collect($arguments)
+            ->filter(fn ($value, $key) => !in_array($key, $excludedAttributes))
+            ->map(function ($value, $key) {
+                return $key . '="' . $value . '"';
+            })->implode(' ');
+    }
+
+    protected static function canUseWebpSource(): bool
+    {
+        return in_array(config('justbetter.glide-directive.sources'), ['webp', 'both']);
+    }
+
+    protected static function canUseMimeTypeSource(): bool
+    {
+        return in_array(config('justbetter.glide-directive.sources'), ['mime_type', 'both']);
     }
 }
