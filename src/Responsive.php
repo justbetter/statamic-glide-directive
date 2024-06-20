@@ -2,12 +2,14 @@
 
 namespace JustBetter\GlideDirective;
 
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Statamic\Assets\Asset;
 use Statamic\Statamic;
 
 class Responsive
 {
-    public static function handle(...$arguments)
+    public static function handle(mixed ...$arguments): Factory|View
     {
         $image = $arguments[0];
         $image = get_class($image) === 'Statamic\Fields\Value' ? $image->value() : $image;
@@ -24,11 +26,11 @@ class Responsive
         ]);
     }
 
-    public static function getPresets(Asset $image)
+    public static function getPresets(Asset $image): array
     {
         $config = config('statamic.assets.image_manipulation.presets');
 
-        if (!config('justbetter.glide-directive.placeholder') && isset($config['placeholder'])) {
+        if (! config('justbetter.glide-directive.placeholder') && isset($config['placeholder'])) {
             unset($config['placeholder']);
         }
 
@@ -46,7 +48,7 @@ class Responsive
 
         $index = 0;
         foreach ($configPresets as $preset => $data) {
-            $size = $data['w'] . 'w';
+            $size = $data['w'].'w';
 
             if ($index < (count($configPresets) - 1)) {
                 $size .= ', ';
@@ -55,17 +57,16 @@ class Responsive
             if (self::canUseWebpSource()) {
                 $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
                 if ($glideUrl) {
-                    $presets['webp'] .= $glideUrl . ' ' . $size;
+                    $presets['webp'] .= $glideUrl.' '.$size;
                 }
             }
 
             if (self::canUseMimeTypeSource()) {
                 $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
                 if ($glideUrl) {
-                    $presets[$image->mimeType()] .= $glideUrl . ' ' . $size;
+                    $presets[$image->mimeType()] .= $glideUrl.' '.$size;
                 }
             }
-
 
             if ($preset === 'placeholder') {
                 $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
@@ -77,7 +78,7 @@ class Responsive
             $index++;
         }
 
-        if (!isset($presets['placeholder'])) {
+        if (! isset($presets['placeholder'])) {
             $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => collect($configPresets)->keys()->first(), 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch();
             $presets['placeholder'] = $glideUrl;
         }
@@ -93,12 +94,12 @@ class Responsive
         // filter config based on aspect ratio
         // if ratio < 1 get all presets with a height bigger than the width, else get all presets with width equal or bigger than the height.
         if ($ratio < 0.999) {
-            $presets = $presets->filter(fn($preset, $key) => $preset['h'] > $preset['w']);
+            $presets = $presets->filter(fn ($preset, $key) => $preset['h'] > $preset['w']);
             if ($presets->isNotEmpty() && isset($config['placeholder'])) {
                 $presets->prepend($config['placeholder'], 'placeholder');
             }
         } else {
-            $presets = $presets->filter(fn($preset, $key) => $key === 'placeholder' || $preset['w'] >= $preset['h']);
+            $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || $preset['w'] >= $preset['h']);
         }
 
         return $presets->isNotEmpty() ? $presets->toArray() : $config;
@@ -109,9 +110,9 @@ class Responsive
         $excludedAttributes = ['src', 'class', 'alt', 'width', 'height', 'onload'];
 
         return collect($arguments)
-            ->filter(fn ($value, $key) => !in_array($key, $excludedAttributes))
+            ->filter(fn ($value, $key) => ! in_array($key, $excludedAttributes))
             ->map(function ($value, $key) {
-                return $key . '="' . $value . '"';
+                return $key.'="'.$value.'"';
             })->implode(' ');
     }
 
