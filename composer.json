@@ -48,7 +48,8 @@
         }
     ],
     "scripts": {
-        "analyse": "phpstan"
+        "analyse": "phpstan",
+        "fix-style": "pint"
     },
     "minimum-stability": "dev"
 }
