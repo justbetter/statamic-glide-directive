@@ -3,7 +3,7 @@ name: style
 on:
   push:
     branches:
-      - main
+      - master
 jobs:
   style:
     name: Style
