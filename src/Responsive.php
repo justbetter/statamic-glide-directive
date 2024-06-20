@@ -4,10 +4,12 @@ namespace JustBetter\GlideDirective;
 
 use Statamic\Assets\Asset;
 use Statamic\Statamic;
+use Illuminate\Contracts\View\View;
+use Illuminate\Contracts\View\Factory;
 
 class Responsive
 {
-    public static function handle(...$arguments)
+    public static function handle(mixed ...$arguments): Factory|View
     {
         $image = $arguments[0];
         $image = get_class($image) === 'Statamic\Fields\Value' ? $image->value() : $image;
@@ -24,7 +26,7 @@ class Responsive
         ]);
     }
 
-    public static function getPresets(Asset $image)
+    public static function getPresets(Asset $image): array
     {
         $config = config('statamic.assets.image_manipulation.presets');
 
