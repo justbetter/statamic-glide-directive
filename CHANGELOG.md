@@ -1,6 +1,14 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/1.2.0...master)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.0.0...master)
+## [2.0.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.0.0) - 2024-08-08
+
+### What's Changed
+* Statamic5 compatible by @BobWez98 in https://github.com/justbetter/statamic-glide-directive/pull/3
+
+
+**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/1.2.0...2.0.0
+
 ## [1.2.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/1.2.0) - 2024-06-20
 
 ### What's Changed
