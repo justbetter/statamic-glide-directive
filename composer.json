@@ -4,8 +4,8 @@
     "type": "package",
     "require": {
         "php": "^8.2|^8.3",
-        "laravel/framework": "^10.0",
-        "statamic/cms": "^4.0"
+        "laravel/framework": "^11.0",
+        "statamic/cms": "^5.0"
     },
     "require-dev": {
         "laravel/pint": "^1.7",
