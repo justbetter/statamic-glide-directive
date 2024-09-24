@@ -28,5 +28,5 @@ return [
     // Set 'webp' for WebP only.
     // Set 'mime_type' for the original image mime type.
     // Set 'both' to use both sources.
-    'sources' => 'webp'
+    'sources' => 'webp',
 ];
