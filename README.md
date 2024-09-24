@@ -1,3 +1,7 @@
+<a href="https://github.com/justbetter/statamic-glide-directive" title="JustBetter">
+    <img src="./art/banner.png" alt="Banner">
+</a>
+
 # Statamic glide directive
 
 > Blade directive to use glide with images
