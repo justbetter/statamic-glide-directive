@@ -55,21 +55,21 @@ class Responsive
             }
 
             if (self::canUseWebpSource()) {
-                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => $data['fit'] ?? 'crop_focal'])->fetch();
                 if ($glideUrl) {
                     $presets['webp'] .= $glideUrl.' '.$size;
                 }
             }
 
             if (self::canUseMimeTypeSource()) {
-                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => $data['fit'] ?? 'crop_focal'])->fetch();
                 if ($glideUrl) {
                     $presets[$image->mimeType()] .= $glideUrl.' '.$size;
                 }
             }
 
             if ($preset === 'placeholder') {
-                $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => $data['fit'] ?? 'crop_focal'])->fetch();
                 if ($glideUrl) {
                     $presets['placeholder'] = $glideUrl;
                 }
