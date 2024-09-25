@@ -45,7 +45,8 @@ class Responsive
         }
 
         $configPresets = self::getPresetsByRatio($image, $config);
-
+        $imageMeta = $image->meta();
+        $fit = isset($imageMeta['data']['focus']) ? sprintf('crop-%s', $imageMeta['data']['focus']) : null;
         $index = 0;
         foreach ($configPresets as $preset => $data) {
             $size = $data['w'].'w';
@@ -53,23 +54,23 @@ class Responsive
             if ($index < (count($configPresets) - 1)) {
                 $size .= ', ';
             }
-
+            
             if (self::canUseWebpSource()) {
-                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => $fit ?? $data['fit']])->fetch();
                 if ($glideUrl) {
                     $presets['webp'] .= $glideUrl.' '.$size;
                 }
             }
 
             if (self::canUseMimeTypeSource()) {
-                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => $fit ?? $data['fit']])->fetch();
                 if ($glideUrl) {
                     $presets[$image->mimeType()] .= $glideUrl.' '.$size;
                 }
             }
 
             if ($preset === 'placeholder') {
-                $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => $data['crop'] ?? 'crop_focal'])->fetch();
+                $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => $fit ?? $data['fit']])->fetch();
                 if ($glideUrl) {
                     $presets['placeholder'] = $glideUrl;
                 }

@@ -8,20 +8,20 @@ return [
     // The default presets used for generating the resizes.
     // If the config in statamic.assets.image_manipulation.presets is empty this will be used instead.
     'presets' => [
-        'placeholder' => ['w' => 32, 'h' => 32, 'q' => 100, 'fit' => 'crop_focal'],
-        'xs' => ['w' => 320, 'h' => 320, 'q' => 100, 'fit' => 'crop_focal'],
-        'sm' => ['w' => 480, 'h' => 480, 'q' => 100, 'fit' => 'crop_focal'],
-        'md' => ['w' => 768, 'h' => 768, 'q' => 100, 'fit' => 'crop_focal'],
-        'lg' => ['w' => 1280, 'h' => 1280, 'q' => 100, 'fit' => 'crop_focal'],
-        'xl' => ['w' => 1440, 'h' => 1440, 'q' => 100, 'fit' => 'crop_focal'],
-        '2xl' => ['w' => 1680, 'h' => 1680, 'q' => 100, 'fit' => 'crop_focal'],
+        'placeholder' => ['w' => 32, 'h' => 32, 'q' => 100, 'fit' => 'contain'],
+        'xs' => ['w' => 320, 'h' => 320, 'q' => 100, 'fit' => 'contain'],
+        'sm' => ['w' => 480, 'h' => 480, 'q' => 100, 'fit' => 'contain'],
+        'md' => ['w' => 768, 'h' => 768, 'q' => 100, 'fit' => 'contain'],
+        'lg' => ['w' => 1280, 'h' => 1280, 'q' => 100, 'fit' => 'contain'],
+        'xl' => ['w' => 1440, 'h' => 1440, 'q' => 100, 'fit' => 'contain'],
+        '2xl' => ['w' => 1680, 'h' => 1680, 'q' => 100, 'fit' => 'contain'],
 
-        'xs-h' => ['w' => 160, 'h' => 320, 'q' => 100, 'fit' => 'crop_focal'],
-        'sm-h' => ['w' => 320, 'h' => 480, 'q' => 100, 'fit' => 'crop_focal'],
-        'md-h' => ['w' => 480, 'h' => 768, 'q' => 100, 'fit' => 'crop_focal'],
-        'lg-h' => ['w' => 768, 'h' => 1280, 'q' => 100, 'fit' => 'crop_focal'],
-        'xl-h' => ['w' => 1280, 'h' => 1440, 'q' => 100, 'fit' => 'crop_focal'],
-        '2xl-h' => ['w' => 1440, 'h' => 1680, 'q' => 100, 'fit' => 'crop_focal'],
+        'xs-h' => ['w' => 160, 'h' => 320, 'q' => 100, 'fit' => 'contain'],
+        'sm-h' => ['w' => 320, 'h' => 480, 'q' => 100, 'fit' => 'contain'],
+        'md-h' => ['w' => 480, 'h' => 768, 'q' => 100, 'fit' => 'contain'],
+        'lg-h' => ['w' => 768, 'h' => 1280, 'q' => 100, 'fit' => 'contain'],
+        'xl-h' => ['w' => 1280, 'h' => 1440, 'q' => 100, 'fit' => 'contain'],
+        '2xl-h' => ['w' => 1440, 'h' => 1680, 'q' => 100, 'fit' => 'contain'],
     ],
 
     // Configure which sources you would like to use.
