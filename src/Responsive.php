@@ -54,7 +54,7 @@ class Responsive
             if ($index < (count($configPresets) - 1)) {
                 $size .= ', ';
             }
-            
+
             if (self::canUseWebpSource()) {
                 $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => $fit ?? $data['fit']])->fetch();
                 if ($glideUrl) {
