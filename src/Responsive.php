@@ -46,7 +46,7 @@ class Responsive
 
         $configPresets = self::getPresetsByRatio($image, $config);
         $imageMeta = $image->meta();
-        $fit = isset($imageMeta['data']['focus']) ? sprintf('crop-%s', $imageMeta['data']['focus']) : false;
+        $fit = isset($imageMeta['data']['focus']) ? sprintf('crop-%s', $imageMeta['data']['focus']) : null;
         $index = 0;
         foreach ($configPresets as $preset => $data) {
             $size = $data['w'].'w';
