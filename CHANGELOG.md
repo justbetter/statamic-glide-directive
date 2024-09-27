@@ -1,6 +1,11 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.1.0...master)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.1.1...master)
+## [2.1.1](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.1.1) - 2024-09-27
+
+### Fixed
+* Return empty string when image is null by #6 
+
 ## [2.1.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.1.0) - 2024-09-25
 
 ### What's Changed
