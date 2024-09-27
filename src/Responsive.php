@@ -9,11 +9,15 @@ use Statamic\Statamic;
 
 class Responsive
 {
-    public static function handle(mixed ...$arguments): Factory|View
+    public static function handle(mixed ...$arguments): Factory|View|string
     {
         $image = $arguments[0];
         $image = get_class($image) === 'Statamic\Fields\Value' ? $image->value() : $image;
         $arguments = $arguments[1] ?? [];
+
+        if (!$image) {
+            return '';
+        }
 
         return view('statamic-glide-directive::image', [
             'image' => $image,
