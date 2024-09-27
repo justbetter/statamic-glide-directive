@@ -15,7 +15,7 @@ class Responsive
         $image = get_class($image) === 'Statamic\Fields\Value' ? $image->value() : $image;
         $arguments = $arguments[1] ?? [];
 
-        if (!$image) {
+        if (! $image) {
             return '';
         }
 
