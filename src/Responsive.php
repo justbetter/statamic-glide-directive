@@ -5,6 +5,7 @@ namespace JustBetter\GlideDirective;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Statamic\Assets\Asset;
+use Statamic\Fields\Value;
 use Statamic\Statamic;
 
 class Responsive
@@ -12,10 +13,10 @@ class Responsive
     public static function handle(mixed ...$arguments): Factory|View|string
     {
         $image = $arguments[0];
-        $image = get_class($image) === 'Statamic\Fields\Value' ? $image->value() : $image;
+        $image = $image instanceof Value ? $image->value() : $image;
         $arguments = $arguments[1] ?? [];
 
-        if (! $image) {
+        if (! $image || !($image instanceof Asset)) {
             return '';
         }
 
