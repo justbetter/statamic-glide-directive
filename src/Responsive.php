@@ -16,7 +16,7 @@ class Responsive
         $image = $image instanceof Value ? $image->value() : $image;
         $arguments = $arguments[1] ?? [];
 
-        if (! $image || !($image instanceof Asset)) {
+        if (! $image || ! ($image instanceof Asset)) {
             return '';
         }
 
