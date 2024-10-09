@@ -94,19 +94,11 @@ class Responsive
 
     protected static function getPresetsByRatio(Asset $image, array $config): array
     {
-        $ratio = $image->width() / $image->height();
         $presets = collect($config);
 
         // filter config based on aspect ratio
-        // if ratio < 1 get all presets with a height bigger than the width, else get all presets with width equal or bigger than the height.
-        if ($ratio < 0.999) {
-            $presets = $presets->filter(fn ($preset, $key) => $preset['h'] > $preset['w']);
-            if ($presets->isNotEmpty() && isset($config['placeholder'])) {
-                $presets->prepend($config['placeholder'], 'placeholder');
-            }
-        } else {
-            $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || $preset['w'] >= $preset['h']);
-        }
+        $vertical = $image->height() > $image->width();
+        $presets = $presets->filter(fn ($preset, $key) => ($preset['h'] > $preset['w']) === $vertical);
 
         return $presets->isNotEmpty() ? $presets->toArray() : $config;
     }
