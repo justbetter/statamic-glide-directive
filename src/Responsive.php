@@ -98,7 +98,7 @@ class Responsive
 
         // filter config based on aspect ratio
         $vertical = $image->height() > $image->width();
-        $presets = $presets->filter(fn ($preset, $key) => ($preset['h'] > $preset['w']) === $vertical);
+        $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || (($preset['h'] > $preset['w']) === $vertical));
 
         return $presets->isNotEmpty() ? $presets->toArray() : $config;
     }
