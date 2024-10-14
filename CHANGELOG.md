@@ -1,6 +1,25 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.0.0...master)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.1.2...master)
+## [2.1.2](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.1.2) - 2024-10-02
+
+### Fixed
+* Return empty string when argument is not an asset  
+
+## [2.1.1](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.1.1) - 2024-09-27
+
+### Fixed
+* Return empty string when image is null by #6 
+
+## [2.1.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.1.0) - 2024-09-25
+
+### What's Changed
+
+* Use right config by @BobWez98 in https://github.com/justbetter/statamic-glide-directive/pull/5
+
+
+**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/2.0.0...2.1.0
+
 ## [2.0.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.0.0) - 2024-08-08
 
 ### What's Changed
