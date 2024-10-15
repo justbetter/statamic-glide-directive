@@ -4,34 +4,47 @@ namespace JustBetter\GlideDirective;
 
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
 use Statamic\Assets\Asset;
+use Statamic\Contracts\Assets\Asset as AssetContract;
+use Statamic\Facades\Config;
+use Statamic\Facades\Glide;
+use Statamic\Facades\Image;
+use Statamic\Facades\URL;
 use Statamic\Fields\Value;
+use Statamic\Imaging\GlideImageManipulator;
+use Statamic\Imaging\ImageGenerator;
 use Statamic\Statamic;
+use Statamic\Support\Str;
 
 class Responsive
 {
+    public function __construct(public GlideImageManipulator $glideImageManipulator)
+    {
+    }
+
     public static function handle(mixed ...$arguments): Factory|View|string
     {
-        $image = $arguments[0];
-        $image = $image instanceof Value ? $image->value() : $image;
+        $asset = $arguments[0];
+        $asset = $asset instanceof Value ? $asset->value() : $asset;
         $arguments = $arguments[1] ?? [];
 
-        if (! $image || ! ($image instanceof Asset)) {
+        if (! $asset || ! ($asset instanceof Asset)) {
             return '';
         }
 
         return view('statamic-glide-directive::image', [
-            'image' => $image,
-            'presets' => self::getPresets($image),
+            'image' => $asset,
+            'presets' => self::getPresets($asset),
             'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
             'alt' => $arguments['alt'] ?? '',
-            'width' => $arguments['width'] ?? $image->width(),
-            'height' => $arguments['height'] ?? $image->height(),
+            'width' => $arguments['width'] ?? $asset->width(),
+            'height' => $arguments['height'] ?? $asset->height(),
         ]);
     }
 
-    public static function getPresets(Asset $image): array
+    public static function getPresets(Asset $asset): array
     {
         $config = config('statamic.assets.image_manipulation.presets');
 
@@ -46,13 +59,14 @@ class Responsive
         }
 
         if (self::canUseMimeTypeSource()) {
-            $presets[$image->mimeType()] = '';
+            $presets[$asset->mimeType()] = '';
         }
 
-        $configPresets = self::getPresetsByRatio($image, $config);
-        $imageMeta = $image->meta();
-        $fit = isset($imageMeta['data']['focus']) ? sprintf('crop-%s', $imageMeta['data']['focus']) : null;
+        $configPresets = self::getPresetsByRatio($asset, $config);
+        $assetMeta = $asset->meta();
+        $fit = isset($assetMeta['data']['focus']) ? sprintf('crop-%s', $assetMeta['data']['focus']) : null;
         $index = 0;
+
         foreach ($configPresets as $preset => $data) {
             $size = $data['w'].'w';
 
@@ -60,22 +74,16 @@ class Responsive
                 $size .= ', ';
             }
 
-            if (self::canUseWebpSource()) {
-                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'format' => 'webp', 'fit' => $fit ?? $data['fit']])->fetch();
-                if ($glideUrl) {
-                    $presets['webp'] .= $glideUrl.' '.$size;
-                }
+            if (self::canUseWebpSource() && $glideUrl = self::getGlideUrl($asset, $preset, $fit ?? $data['fit'], 'webp')) {
+                $presets['webp'] .= $glideUrl.' '.$size;
             }
 
-            if (self::canUseMimeTypeSource()) {
-                $glideUrl = Statamic::tag($preset === 'placeholder' ? 'glide:data_url' : 'glide')->params(['preset' => $preset, 'src' => $image->url(), 'fit' => $fit ?? $data['fit']])->fetch();
-                if ($glideUrl) {
-                    $presets[$image->mimeType()] .= $glideUrl.' '.$size;
-                }
+            if (self::canUseMimeTypeSource() && $glideUrl = self::getGlideUrl($asset, $fit ?? $data['fit'], $preset)) {
+                $presets[$asset->mimeType()] .= $glideUrl.' '.$size;
             }
 
             if ($preset === 'placeholder') {
-                $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $image->url(), 'fit' => $fit ?? $data['fit']])->fetch();
+                $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $asset->url(), 'fit' => $fit ?? $data['fit']])->fetch();
                 if ($glideUrl) {
                     $presets['placeholder'] = $glideUrl;
                 }
@@ -85,19 +93,53 @@ class Responsive
         }
 
         if (! isset($presets['placeholder'])) {
-            $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => collect($configPresets)->keys()->first(), 'src' => $image->url(), 'fit' => 'crop_focal'])->fetch();
+            $glideUrl = Statamic::tag('glide:data_url')->params(['preset' => collect($configPresets)->keys()->first(), 'src' => $asset->url(), 'fit' => 'crop_focal'])->fetch();
             $presets['placeholder'] = $glideUrl;
         }
 
         return $presets;
     }
 
-    protected static function getPresetsByRatio(Asset $image, array $config): array
+    protected static function getGlideUrl(Asset $asset, string $preset, string $fit, ?string $format = null): ?string
+    {
+        if ($preset === 'placeholder') {
+            return Statamic::tag('glide:data_url')->params(['preset' => $preset, 'src' => $asset->url(), 'format' => $format, 'fit' => $fit])->fetch();
+        }
+
+        $manipulator = self::getManipulator($asset, $preset, $fit, $format);
+        $params = $manipulator->getParams();
+
+        $manipulationCacheKey = 'asset::' . $asset->id() . '::' . md5(json_encode($params));
+
+        if (Glide::cacheStore()->has($manipulationCacheKey)) {
+            $cachedUrl = Glide::cacheStore()->get($manipulationCacheKey);
+            $url = Str::ensureLeft(config('statamic.assets.image_manipulation.route'), '/') . '/' . $cachedUrl;
+
+            return URL::encode($url);
+        }
+
+        GenerateGlideImageJob::dispatch($asset, $preset, $fit, $format);
+
+        return null;
+    }
+
+    protected static function getManipulator(Asset $item, string $preset, string $fit, ?string $format = null): GlideImageManipulator
+    {
+        $manipulator = Image::manipulate($item);
+
+        collect(['p' => $preset, 'fm' => $format, 'fit' => $fit])->each(function ($value, $param) use ($manipulator) {
+            $manipulator->$param($value);
+        });
+
+        return $manipulator;
+    }
+
+    protected static function getPresetsByRatio(Asset $asset, array $config): array
     {
         $presets = collect($config);
 
         // filter config based on aspect ratio
-        $vertical = $image->height() > $image->width();
+        $vertical = $asset->height() > $asset->width();
         $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || (($preset['h'] > $preset['w']) === $vertical));
 
         return $presets->isNotEmpty() ? $presets->toArray() : $config;
