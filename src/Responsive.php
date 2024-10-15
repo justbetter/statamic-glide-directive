@@ -3,7 +3,6 @@
 namespace JustBetter\GlideDirective;
 
 use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
-use Statamic\Imaging\GlideImageManipulator;
 use Statamic\Contracts\Imaging\ImageManipulator;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
