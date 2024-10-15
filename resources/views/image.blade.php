@@ -26,7 +26,7 @@
             <img
                 {!! $attributes ?? '' !!}
                 class="{{ $class }}"
-                src="{{ $presets['placeholder'] ?? $image->url() }}"
+                src="{{ isset($presets['webp']) || isset($presets[$image->mimeType()]) ? ($presets['placeholder'] ?? $image->url()) : $image->url() }}"
                 alt="{{ $alt ?? $image->alt() }}"
                 width="{{ $width }}"
                 height="{{ $height }}"
