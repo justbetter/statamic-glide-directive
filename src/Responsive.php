@@ -126,9 +126,14 @@ class Responsive
         }
 
         $manipulator = self::getManipulator($asset, $preset, $fit, $format);
+
+        if (is_string($manipulator)) {
+            return null;
+        }
+
         $params = $manipulator->getParams();
 
-        $manipulationCacheKey = 'asset::' . $asset->id() . '::' . md5(json_encode($params) ?? '');
+        $manipulationCacheKey = 'asset::' . $asset->id() . '::' . md5(json_encode($params) ? json_encode($params) : '');
 
         if ($cachedUrl = Glide::cacheStore()->get($manipulationCacheKey)) {
             $url = Str::ensureLeft(config('statamic.assets.image_manipulation.route'), '/') . '/' . $cachedUrl;
@@ -140,7 +145,7 @@ class Responsive
         return null;
     }
 
-    protected static function getManipulator(Asset $item, string $preset, string $fit, ?string $format = null): ImageManipulator
+    protected static function getManipulator(Asset $item, string $preset, string $fit, ?string $format = null): ImageManipulator|string
     {
         $manipulator = Image::manipulate($item);
 
