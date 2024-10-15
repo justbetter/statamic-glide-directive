@@ -2,27 +2,20 @@
 
 namespace JustBetter\GlideDirective;
 
+use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
+use Statamic\Imaging\GlideImageManipulator;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
-use Statamic\Assets\Asset;
-use Statamic\Contracts\Assets\Asset as AssetContract;
-use Statamic\Facades\Config;
 use Statamic\Facades\Glide;
 use Statamic\Facades\Image;
 use Statamic\Facades\URL;
+use Statamic\Assets\Asset;
 use Statamic\Fields\Value;
-use Statamic\Imaging\GlideImageManipulator;
-use Statamic\Imaging\ImageGenerator;
-use Statamic\Statamic;
 use Statamic\Support\Str;
+use Statamic\Statamic;
 
 class Responsive
 {
-    public function __construct(public GlideImageManipulator $glideImageManipulator)
-    {
-    }
-
     public static function handle(mixed ...$arguments): Factory|View|string
     {
         $asset = $arguments[0];
