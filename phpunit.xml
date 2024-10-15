@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="false" bootstrap="vendor/autoload.php" colors="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.2/phpunit.xsd" processIsolation="false" stopOnFailure="false" beStrictAboutTestsThatDoNotTestAnything="false" cacheDirectory=".phpunit.cache">
-  <testsuites>
-    <testsuite name="Test Suite">
-      <directory suffix="Test.php">./tests</directory>
-    </testsuite>
-  </testsuites>
-  <php>
-    <env name="APP_ENV" value="testing"/>
-    <env name="APP_KEY" value="base64:ybcI9MKuhLnESRSuWDfnJQuohOXMBaynfbTC5Y5i1FE="/>
-    <env name="BCRYPT_ROUNDS" value="4"/>
-    <env name="CACHE_DRIVER" value="array"/>
-     <env name="DB_CONNECTION" value="sqlite"/>
-     <env name="DB_DATABASE" value=":memory:"/>
-    <env name="MAIL_MAILER" value="array"/>
-    <env name="QUEUE_CONNECTION" value="sync"/>
-    <env name="SESSION_DRIVER" value="array"/>
-    <env name="TELESCOPE_ENABLED" value="false"/>
-  </php>
-  <source/>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         cacheDirectory=".phpunit.cache"
+         executionOrder="depends,defects"
+         requireCoverageMetadata="true"
+         beStrictAboutCoverageMetadata="true"
+         beStrictAboutOutputDuringTests="true"
+         displayDetailsOnPhpunitDeprecations="true"
+         failOnPhpunitDeprecation="true"
+         failOnRisky="true"
+         failOnWarning="true">
+    <testsuites>
+        <testsuite name="default">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <source restrictDeprecations="true" restrictNotices="true" restrictWarnings="true">
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
 </phpunit>
