@@ -6,9 +6,9 @@
             const imgHeight = bounds.height;
             const pixelRatio = window.devicePixelRatio * imgWidth;
             
-            entry.target.parentNode.querySelectorAll('source').forEach((source) => {
-                requestAnimationFrame(() => source.sizes = pixelRatio + 'px');
-            });
+            requestAnimationFrame(() => entry.target.parentNode.querySelectorAll('source').forEach((source) => {
+                source.sizes = pixelRatio + 'px';
+            }));
         });
     });
 </script>
