@@ -2,11 +2,15 @@
 
 namespace JustBetter\GlideDirective\Tests\View\Blade;
 
+use Illuminate\Support\Facades\Queue;
+use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
 use Statamic\Assets\AssetContainer;
 use Illuminate\Http\UploadedFile;
 use PHPUnit\Framework\Attributes\Test;
 use JustBetter\GlideDirective\Tests\TestCase;
 use JustBetter\GlideDirective\Responsive;
+use Statamic\Statamic;
+use Illuminate\Foundation\Bus\PendingDispatch;
 
 class ResponsiveDirectiveTest extends TestCase
 {
@@ -27,26 +31,52 @@ class ResponsiveDirectiveTest extends TestCase
     #[Test]
     public function test_responsive_directive_tag_handle()
     {
-        config(['filesystems.disks.assets' => [
-            'driver' => 'local',
-            'root' => $this->assetPath(),
-            'url' => '/test',
-        ]]);
-
-        $assetContainer = (new AssetContainer)
-            ->handle('test_container')
-            ->disk('assets')
-            ->save();
-
-        copy($this->assetPath('test.png'), $this->assetPath('upload.png'));
-
-        $file = new UploadedFile($this->assetPath('upload.png'), 'test.png');
-        $path = $file->getClientOriginalName();
-        $asset = $assetContainer->makeAsset($path)->upload($file);
+        $asset = $this->uploadTestAsset('upload.png');
         $view = Responsive::handle($asset);
-
         $asset->delete();
 
         $this->assertStringContainsString('<picture', $view->render());
+    }
+
+    #[Test]
+    public function test_responsive_directive_tag_cant_handle_string()
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+        $view = Responsive::handle($asset->url());
+        $asset->delete();
+
+        $this->assertSame($view, "");
+    }
+
+    #[Test]
+    public function can_dispatch_glide_job()
+    {
+        Queue::fake();
+        Queue::assertNothingPushed();
+
+        $asset = $this->uploadTestAsset('upload.png');
+        GenerateGlideImageJob::dispatch($asset, 'xs', '', null);
+
+        Queue::assertPushed(GenerateGlideImageJob::class, 1);
+        $asset->delete();
+    }
+
+    #[Test]
+    public function can_generate_glide_preset()
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $glideImage = Statamic::tag('glide')->params(
+            [
+                'preset' => 'xs',
+                'src' => $asset->url(),
+                'format' => null,
+                'fit' => null
+            ]
+        )->fetch();
+
+        $asset->delete();
+
+        $this->assertStringContainsString('/containers/test_container/test', $glideImage);
     }
 }
