@@ -20,7 +20,7 @@ class ResponsiveDirectiveTest extends TestCase
     }
 
     #[Test]
-    public function test_responsive_directive_tag()
+    public function test_responsive_directive_tag(): void
     {
         $blade = "@responsive('test.png')";
         $expected = "<?php echo \JustBetter\GlideDirective\Responsive::handle('test.png'); ?>";
@@ -29,17 +29,18 @@ class ResponsiveDirectiveTest extends TestCase
     }
 
     #[Test]
-    public function test_responsive_directive_tag_handle()
+    public function test_responsive_directive_tag_handle(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
         $view = Responsive::handle($asset);
         $asset->delete();
 
+        /* @phpstan-ignore-next-line */
         $this->assertStringContainsString('<picture', $view->render());
     }
 
     #[Test]
-    public function test_responsive_directive_tag_cant_handle_string()
+    public function test_responsive_directive_tag_cant_handle_string(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
         $view = Responsive::handle($asset->url());
@@ -49,7 +50,7 @@ class ResponsiveDirectiveTest extends TestCase
     }
 
     #[Test]
-    public function can_dispatch_glide_job()
+    public function can_dispatch_glide_job(): void
     {
         Queue::fake();
         Queue::assertNothingPushed();
@@ -62,7 +63,7 @@ class ResponsiveDirectiveTest extends TestCase
     }
 
     #[Test]
-    public function can_generate_glide_preset()
+    public function can_generate_glide_preset(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
 
@@ -81,7 +82,7 @@ class ResponsiveDirectiveTest extends TestCase
     }
 
     #[Test]
-    public function can_get_presets_for_asset()
+    public function can_get_presets_for_asset(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
         $presets = Responsive::getPresets($asset);

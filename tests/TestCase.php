@@ -3,6 +3,7 @@
 namespace JustBetter\GlideDirective\Tests;
 
 use Illuminate\Http\UploadedFile;
+use Statamic\Assets\Asset;
 use Statamic\Assets\AssetContainer;
 use Statamic\Testing\AddonTestCase;
 use JustBetter\GlideDirective\ServiceProvider;
@@ -31,7 +32,7 @@ abstract class TestCase extends AddonTestCase
 
     protected string $addonServiceProvider = ServiceProvider::class;
 
-    protected $blade;
+    protected mixed $blade;
 
     protected function setUp(): void
     {
@@ -51,30 +52,17 @@ abstract class TestCase extends AddonTestCase
         return $path;
     }
 
-    protected function assertDirectiveOutput($expected, $expression, $variables = [], $message = '')
-    {
-        $compiled = $this->blade->compileString($expression);
-
-        ob_start();
-        extract($variables);
-        eval(' ?>'.$compiled.'<?php ');
-
-        $output = ob_get_clean();
-
-        $this->assertSame($expected, $output, $message);
-    }
-
-    protected function uploadTestAsset(string $filename)
+    protected function uploadTestAsset(string $filename): Asset
     {
         UploadedFile::fake();
 
+        /* @phpstan-ignore-next-line */
         $assetContainer = (new AssetContainer)
             ->handle('test_container')
             ->disk('assets')
             ->save();
 
         copy($this->assetPath('test.png'), $this->assetPath($filename));
-
 
         $file = new UploadedFile($this->assetPath($filename), 'test.png');
         $path = $file->getClientOriginalName();
