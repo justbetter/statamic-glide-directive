@@ -29,6 +29,13 @@ To allow the images to change on resize, add this include to your head in the la
 @include('statamic-glide-directive::partials.head')
 ```
 
+We recommend to generate your presets by using `php please assets:generate-presets`.
+
+To combat performance issues we recommend using redis for your queue connection, if you keep this on sync the images will be generated on the fly impacting page load.
+
+When using redis the images will also be made on the fly, while working the jobs on the queue. If an image doesn't have a glide preset ready we will use the original image url for the first page load.
+
+
 ## Config
 
 The package has some default config. By default it will use the presets defined in the config of this addon. If you've defined you're asset presets in the Statamic config, that will be used.
