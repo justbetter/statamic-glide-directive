@@ -1,12 +1,13 @@
 <script>
     window.responsiveResizeObserver = new ResizeObserver((entries) => {
         entries.forEach(entry => {
-            const imgWidth = entry.target.getBoundingClientRect().width;
-            const imgHeight = entry.target.getBoundingClientRect().height;
+            const bounds = entry.target.getBoundingClientRect();
+            const imgWidth = bounds.width;
+            const imgHeight = bounds.height;
             const pixelRatio = window.devicePixelRatio * imgWidth;
             
             entry.target.parentNode.querySelectorAll('source').forEach((source) => {
-                source.sizes = pixelRatio + 'px';
+                requestAnimationFrame(() => source.sizes = pixelRatio + 'px');
             });
         });
     });
