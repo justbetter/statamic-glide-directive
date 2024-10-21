@@ -66,12 +66,15 @@ abstract class TestCase extends AddonTestCase
 
     protected function uploadTestAsset(string $filename)
     {
+        UploadedFile::fake();
+
         $assetContainer = (new AssetContainer)
             ->handle('test_container')
             ->disk('assets')
             ->save();
 
         copy($this->assetPath('test.png'), $this->assetPath($filename));
+
 
         $file = new UploadedFile($this->assetPath($filename), 'test.png');
         $path = $file->getClientOriginalName();

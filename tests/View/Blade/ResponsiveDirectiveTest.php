@@ -79,4 +79,14 @@ class ResponsiveDirectiveTest extends TestCase
 
         $this->assertStringContainsString('/containers/test_container/test', $glideImage);
     }
+
+    #[Test]
+    public function can_get_presets_for_asset()
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+        $presets = Responsive::getPresets($asset);
+
+        $this->assertIsArray($presets);
+        $this->assertArrayHasKey('placeholder', $presets);
+    }
 }
