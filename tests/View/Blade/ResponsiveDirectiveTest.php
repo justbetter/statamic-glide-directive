@@ -4,13 +4,10 @@ namespace JustBetter\GlideDirective\Tests\View\Blade;
 
 use Illuminate\Support\Facades\Queue;
 use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
-use Statamic\Assets\AssetContainer;
-use Illuminate\Http\UploadedFile;
-use PHPUnit\Framework\Attributes\Test;
-use JustBetter\GlideDirective\Tests\TestCase;
 use JustBetter\GlideDirective\Responsive;
+use JustBetter\GlideDirective\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use Statamic\Statamic;
-use Illuminate\Foundation\Bus\PendingDispatch;
 
 class ResponsiveDirectiveTest extends TestCase
 {
@@ -46,7 +43,7 @@ class ResponsiveDirectiveTest extends TestCase
         $view = Responsive::handle($asset->url());
         $asset->delete();
 
-        $this->assertSame($view, "");
+        $this->assertSame($view, '');
     }
 
     #[Test]
@@ -72,7 +69,7 @@ class ResponsiveDirectiveTest extends TestCase
                 'preset' => 'xs',
                 'src' => $asset->url(),
                 'format' => null,
-                'fit' => null
+                'fit' => null,
             ]
         )->fetch();
 

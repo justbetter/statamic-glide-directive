@@ -2,17 +2,17 @@
 
 namespace JustBetter\GlideDirective;
 
-use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
-use Statamic\Contracts\Imaging\ImageManipulator;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
+use Statamic\Assets\Asset;
+use Statamic\Contracts\Imaging\ImageManipulator;
 use Statamic\Facades\Glide;
 use Statamic\Facades\Image;
 use Statamic\Facades\URL;
-use Statamic\Assets\Asset;
 use Statamic\Fields\Value;
-use Statamic\Support\Str;
 use Statamic\Statamic;
+use Statamic\Support\Str;
 
 class Responsive
 {
@@ -81,7 +81,7 @@ class Responsive
             }
 
             if (self::canUseMimeTypeSource()) {
-                if($glideUrl = self::getGlideUrl($asset, $fit ?? $data['fit'], $preset)) {
+                if ($glideUrl = self::getGlideUrl($asset, $fit ?? $data['fit'], $preset)) {
                     $presets[$asset->mimeType()] .= $glideUrl.' '.$size;
 
                     if ($preset !== 'placeholder') {
@@ -99,7 +99,7 @@ class Responsive
             $index++;
         }
 
-        if (!$webpSourceFound && !$mimeTypeSourceFound) {
+        if (! $webpSourceFound && ! $mimeTypeSourceFound) {
             $presets = ['placeholder' => $asset->url()];
         }
 
@@ -107,7 +107,7 @@ class Responsive
             $presets['placeholder'] = Statamic::tag('glide:data_url')->params([
                 'preset' => collect($configPresets)->keys()->first(),
                 'src' => $asset->url(),
-                'fit' => 'crop_focal'
+                'fit' => 'crop_focal',
             ])->fetch();
         }
 
@@ -121,7 +121,7 @@ class Responsive
                 'preset' => $preset,
                 'src' => $asset->url(),
                 'format' => $format,
-                'fit' => $fit
+                'fit' => $fit,
             ])->fetch();
         }
 
@@ -133,10 +133,11 @@ class Responsive
 
         $params = $manipulator->getParams();
 
-        $manipulationCacheKey = 'asset::' . $asset->id() . '::' . md5(json_encode($params) ? json_encode($params) : '');
+        $manipulationCacheKey = 'asset::'.$asset->id().'::'.md5(json_encode($params) ? json_encode($params) : '');
 
         if ($cachedUrl = Glide::cacheStore()->get($manipulationCacheKey)) {
-            $url = Str::ensureLeft(config('statamic.assets.image_manipulation.route'), '/') . '/' . $cachedUrl;
+            $url = Str::ensureLeft(config('statamic.assets.image_manipulation.route'), '/').'/'.$cachedUrl;
+
             return URL::encode($url);
         }
 

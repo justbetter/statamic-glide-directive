@@ -2,12 +2,12 @@
 
 namespace JustBetter\GlideDirective\Tests;
 
+use Illuminate\Foundation\Testing\Concerns\InteractsWithViews;
 use Illuminate\Http\UploadedFile;
+use JustBetter\GlideDirective\ServiceProvider;
 use Statamic\Assets\Asset;
 use Statamic\Assets\AssetContainer;
 use Statamic\Testing\AddonTestCase;
-use JustBetter\GlideDirective\ServiceProvider;
-use Illuminate\Foundation\Testing\Concerns\InteractsWithViews;
 use Statamic\Testing\Concerns\PreventsSavingStacheItemsToDisk;
 
 abstract class TestCase extends AddonTestCase
@@ -21,7 +21,7 @@ abstract class TestCase extends AddonTestCase
 
         $app['config']->set('statamic.assets.image_manipulation.driver', 'gd');
         $app['config']->set('statamic.assets.image_manipulation.cache', true);
-        $app['config']->set('statamic.assets.image_manipulation.cache_path', __DIR__ . '/Assets/img');
+        $app['config']->set('statamic.assets.image_manipulation.cache_path', __DIR__.'/Assets/img');
 
         $app['config']->set('filesystems.disks.assets', [
             'driver' => 'local',
