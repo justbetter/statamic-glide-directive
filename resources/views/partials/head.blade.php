@@ -1,14 +1,18 @@
 <script>
-    window.responsiveResizeObserver = new ResizeObserver((entries) => {
-        entries.forEach(entry => {
-            const bounds = entry.target.getBoundingClientRect();
-            const imgWidth = bounds.width;
-            const imgHeight = bounds.height;
-            const pixelRatio = window.devicePixelRatio * imgWidth;
-            
-            requestAnimationFrame(() => entry.target.parentNode.querySelectorAll('source').forEach((source) => {
-                source.sizes = pixelRatio + 'px';
-            }));
+window.responsiveResizeObserver = new ResizeObserver(async (entries) => {
+    entries.forEach(entry => {
+        let imgWidth = entry.devicePixelContentBoxSize[0].inlineSize;
+
+        if (imgWidth === 0) {
+            return;
+        }
+        
+        requestAnimationFrame(() => {
+            entry.target.loading = 'lazy';
+            entry.target.parentNode.querySelectorAll('source').forEach((source) => {
+                source.sizes = imgWidth + 'px'
+            })
         });
-    });
+    })
+});
 </script>
