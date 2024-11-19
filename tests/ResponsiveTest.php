@@ -37,14 +37,14 @@ class ResponsiveTest extends TestCase
     {
         $asset = $this->uploadTestAsset('upload.png');
         $value = new Value($asset);
-        
+
         $view = Responsive::handle($value);
         /* @phpstan-ignore-next-line */
         $rendered = $view->render();
-        
+
         $this->assertStringContainsString('<picture>', $rendered);
         $this->assertStringContainsString('src="', $rendered);
-        
+
         $asset->delete();
     }
 
@@ -52,7 +52,7 @@ class ResponsiveTest extends TestCase
     public function it_handles_custom_attributes(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
-        
+
         $view = Responsive::handle($asset, [
             'class' => 'custom-class',
             'alt' => 'Custom Alt',
@@ -61,17 +61,17 @@ class ResponsiveTest extends TestCase
             'height' => 100,
             'data-custom' => 'value',
         ]);
-        
+
         /* @phpstan-ignore-next-line */
         $rendered = $view->render();
-        
+
         $this->assertStringContainsString('class="custom-class"', $rendered);
         $this->assertStringContainsString('alt="Custom Alt"', $rendered);
         $this->assertStringContainsString('loading="lazy"', $rendered);
         $this->assertStringContainsString('width="100"', $rendered);
         $this->assertStringContainsString('height="100"', $rendered);
         $this->assertStringContainsString('data-custom="value"', $rendered);
-        
+
         $asset->delete();
     }
 
@@ -80,7 +80,7 @@ class ResponsiveTest extends TestCase
     {
         Queue::fake();
         $asset = $this->uploadTestAsset('upload.png');
-        
+
         // Test uncached image
         /* @phpstan-ignore-next-line */
         Glide::cacheStore()->flush();
@@ -88,20 +88,20 @@ class ResponsiveTest extends TestCase
         /* @phpstan-ignore-next-line */
         $view->render();
         Queue::assertPushed(GenerateGlideImageJob::class);
-        
+
         // Test cached image
         Statamic::tag('glide')->params([
             'src' => $asset->url(),
             'preset' => 'xs',
         ])->fetch();
-        
+
         $view = Responsive::handle($asset);
         /* @phpstan-ignore-next-line */
         $rendered = $view->render();
-        
+
         $this->assertStringContainsString('src="', $rendered);
         $this->assertStringContainsString('.png', $rendered);
-        
+
         $asset->delete();
     }
 
@@ -110,13 +110,13 @@ class ResponsiveTest extends TestCase
     {
         $asset = $this->uploadTestAsset('upload.png');
         $asset->data(['focus' => '50-50'])->save();
-        
+
         $view = Responsive::handle($asset);
         /* @phpstan-ignore-next-line */
         $rendered = $view->render();
-        
+
         $this->assertStringContainsString('crop-50-50', $rendered);
-        
+
         $asset->delete();
     }
 
@@ -137,7 +137,7 @@ class ResponsiveTest extends TestCase
         $view = Responsive::handle($asset);
         /* @phpstan-ignore-next-line */
         $rendered = $view->render();
-        $this->assertStringContainsString('<source type="' . $asset->mimeType() . '"', $rendered);
+        $this->assertStringContainsString('<source type="'.$asset->mimeType().'"', $rendered);
 
         // Test both sources
         config()->set('justbetter.glide-directive.sources', 'both');
@@ -145,8 +145,8 @@ class ResponsiveTest extends TestCase
         /* @phpstan-ignore-next-line */
         $rendered = $view->render();
         $this->assertStringContainsString('<source type="image/webp"', $rendered);
-        $this->assertStringContainsString('<source type="' . $asset->mimeType() . '"', $rendered);
-        
+        $this->assertStringContainsString('<source type="'.$asset->mimeType().'"', $rendered);
+
         $asset->delete();
     }
 }

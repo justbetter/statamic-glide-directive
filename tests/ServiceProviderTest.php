@@ -2,9 +2,7 @@
 
 namespace JustBetter\GlideDirective\Tests;
 
-use Illuminate\Support\Facades\Blade;
 use JustBetter\GlideDirective\Responsive;
-use JustBetter\GlideDirective\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class ServiceProviderTest extends TestCase
@@ -13,7 +11,7 @@ class ServiceProviderTest extends TestCase
     public function it_registers_blade_directive(): void
     {
         $compiler = app('blade.compiler');
-        
+
         // Test if the directive is registered
         $this->assertTrue(method_exists($compiler, 'getCustomDirectives'));
         $this->assertArrayHasKey('responsive', $compiler->getCustomDirectives());
