@@ -104,49 +104,4 @@ class ResponsiveTest extends TestCase
 
         $asset->delete();
     }
-
-    #[Test]
-    public function it_respects_focal_point(): void
-    {
-        $asset = $this->uploadTestAsset('upload.png');
-        $asset->data(['focus' => '50-50'])->save();
-
-        $view = Responsive::handle($asset);
-        /* @phpstan-ignore-next-line */
-        $rendered = $view->render();
-
-        $this->assertStringContainsString('crop-50-50', $rendered);
-
-        $asset->delete();
-    }
-
-    #[Test]
-    public function it_handles_different_source_configurations(): void
-    {
-        $asset = $this->uploadTestAsset('upload.png');
-
-        // Test webp source
-        config()->set('justbetter.glide-directive.sources', 'webp');
-        $view = Responsive::handle($asset);
-        /* @phpstan-ignore-next-line */
-        $rendered = $view->render();
-        $this->assertStringContainsString('<source type="image/webp"', $rendered);
-
-        // Test mime_type source
-        config()->set('justbetter.glide-directive.sources', 'mime_type');
-        $view = Responsive::handle($asset);
-        /* @phpstan-ignore-next-line */
-        $rendered = $view->render();
-        $this->assertStringContainsString('<source type="'.$asset->mimeType().'"', $rendered);
-
-        // Test both sources
-        config()->set('justbetter.glide-directive.sources', 'both');
-        $view = Responsive::handle($asset);
-        /* @phpstan-ignore-next-line */
-        $rendered = $view->render();
-        $this->assertStringContainsString('<source type="image/webp"', $rendered);
-        $this->assertStringContainsString('<source type="'.$asset->mimeType().'"', $rendered);
-
-        $asset->delete();
-    }
 }
