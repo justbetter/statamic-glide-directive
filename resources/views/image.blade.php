@@ -28,7 +28,7 @@
                     class="{{ $class }}"
                     @if($presets['placeholder'] ?? false)
                         style="background-image: url('{{ $presets['placeholder'] }}'); background-size: contain; background-position: center; background-repeat: no-repeat;"
-                    @endif                    ]
+                    @endif
                     src="{{ $presets['placeholder'] ?? $image->url() }}"
                     alt="{{ $alt ?? $image->alt() }}"
                     width="{{ $width }}"
