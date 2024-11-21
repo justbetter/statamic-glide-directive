@@ -1,7 +1,7 @@
 <script>
 window.responsiveResizeObserver = new ResizeObserver(async (entries) => {
     entries.forEach(entry => {
-        let imgWidth = entry.devicePixelContentBoxSize[0].inlineSize;
+        let imgWidth = entry?.devicePixelContentBoxSize?.[0]?.inlineSize || 0;
 
         if (imgWidth === 0) {
             return;
