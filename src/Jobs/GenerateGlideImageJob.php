@@ -22,7 +22,9 @@ class GenerateGlideImageJob implements ShouldQueue
         public string $preset = '',
         public string $fit = '',
         public ?string $format = null,
-    ) {}
+    ) {
+        $this->queue = config('justbetter.glide-directive.default_queue', 'default');
+    }
 
     public function handle(): void
     {

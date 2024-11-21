@@ -29,4 +29,7 @@ return [
     // Set 'mime_type' for the original image mime type.
     // Set 'both' to use both sources.
     'sources' => 'webp',
+
+    // Set the default queue to use for generating the images.
+    'default_queue' => env('STATAMIC_GLIDE_DIRECTIVE_DEFAULT_QUEUE', 'default'),
 ];
