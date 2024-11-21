@@ -2,20 +2,20 @@
 
 namespace JustBetter\GlideDirective\Jobs;
 
+use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Statamic\Assets\Asset;
-use Illuminate\Bus\Batchable;
 use Statamic\Statamic;
 
 class GenerateGlideImageJob implements ShouldQueue
 {
+    use Batchable;
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
-    use Batchable;
 
     public function __construct(
         public Asset $asset,
@@ -35,7 +35,7 @@ class GenerateGlideImageJob implements ShouldQueue
                 'preset' => $this->preset,
                 'src' => $this->asset->url(),
                 'format' => $this->format,
-                'fit' => $this->fit
+                'fit' => $this->fit,
             ]
         )->fetch();
     }
