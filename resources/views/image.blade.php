@@ -26,12 +26,16 @@
             <img
                     {!! $attributes ?? '' !!}
                     class="{{ $class }}"
+                    style="background-image: url('{{ $presets['placeholder'] }}'); background-size: contain; background-position: center; background-repeat: no-repeat;"
                     src="{{ $presets['placeholder'] ?? $image->url() }}"
                     alt="{{ $alt ?? $image->alt() }}"
                     width="{{ $width }}"
                     height="{{ $height }}"
                     onload="
-                        this.onload=null;
+                        this.onload=()=>{
+                            this.style.backgroundImage = null;
+                            this.onload=null
+                        };
                         window.responsiveResizeObserver.observe(this);
                     "
             >
