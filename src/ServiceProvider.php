@@ -21,7 +21,7 @@ class ServiceProvider extends AddonServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/glide-directive.php', 'justbetter.glide-directive');
 
         $this->publishes([
-            __DIR__.'/../config/glide-directive.php' => config_path('glide-directive.php'),
+            __DIR__.'/../config/glide-directive.php' => config_path('justbetter/glide-directive.php'),
         ], 'config');
 
         if (empty(config('statamic.assets.image_manipulation.presets'))) {
