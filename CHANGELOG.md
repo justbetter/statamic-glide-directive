@@ -1,60 +1,86 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.1.2...master)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.0...master)
+## [2.6.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.0) - 2024-12-11
+
+### Changed
+- Added tests (#11)
+- Load lazy to fix safari loading, also grab different width when devicePixelContentBoxSize is not available (#15)
+
+### Fixed
+- Fix config publish path (#14)
+
+## [2.5.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.5.0) - 2024-11-21
+
+### Fixed
+* Fallback if entry is missing (#13) 
+
+## [2.4.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.4.0) - 2024-11-21
+
+### Added
+* Prevent render blocking resizes (#10)
+* Added queue setting for image job (#12)
+
+
+## [2.3.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.3.0) - 2024-10-22
+
+### Changed
+* PHPunit test (#4)
+
+### Fixed
+* Reduce Forced reflows (#9)
+
+## [2.2.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.2.0) - 2024-10-16
+
+### Changed
+* Generate glide presets through jobs in (#8) 
+
+## [2.1.3](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.1.3) - 2024-10-09
+
+### Refactor
+- Refactor getPresetsByRatio (#7)
+
 ## [2.1.2](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.1.2) - 2024-10-02
 
 ### Fixed
-* Return empty string when argument is not an asset  
+- Return empty string when argument is not an asset  
 
 ## [2.1.1](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.1.1) - 2024-09-27
 
 ### Fixed
-* Return empty string when image is null by #6 
+- Return empty string when image is null (#6)
 
 ## [2.1.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.1.0) - 2024-09-25
 
-### What's Changed
+### Changed
 
-* Use right config by @BobWez98 in https://github.com/justbetter/statamic-glide-directive/pull/5
-
-
-**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/2.0.0...2.1.0
+- Use right config (#5)
 
 ## [2.0.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.0.0) - 2024-08-08
 
-### What's Changed
-* Statamic5 compatible by @BobWez98 in https://github.com/justbetter/statamic-glide-directive/pull/3
-
-
-**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/1.2.0...2.0.0
+### Changed
+- Statamic 5 compatible (#3)
 
 ## [1.2.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/1.2.0) - 2024-06-20
 
-### What's Changed
-* Added actions for phpstan, pint and changelogger by @BobWez98 in https://github.com/justbetter/statamic-glide-directive/pull/2
+### Added
+- Added actions for phpstan, pint and changelogger (#2)
 
-### New Contributors
-* @BobWez98 made their first contribution in https://github.com/justbetter/statamic-glide-directive/pull/2
-
-**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/1.1.0...1.2.0
 
 ## [1.1.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/1.1.0) - 2024-05-31
 
-### What's Changed
-* Added attribute bag + option for sources in config by @kevinmeijer97 in https://github.com/justbetter/statamic-glide-directive/pull/1
-
-### New Contributors
-* @kevinmeijer97 made their first contribution in https://github.com/justbetter/statamic-glide-directive/pull/1
-
-**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/1.0.2...1.1.0
+### Added
+- Added attribute bag + option for sources in config (#1)
 
 ## [1.0.2](https://github.com/justbetter/statamic-glide-directive/releases/tag/1.0.2) - 2024-05-17
 
-* Use image alts from statamic
+### Changed
+- Use image alts from Statamic
 
 ## [1.0.1](https://github.com/justbetter/statamic-glide-directive/releases/tag/1.0.1) - 2024-05-17
 
-* Added focalpoints
+### Added
+- Added focal points
 
 ## [1.0.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/1.0.0) - 2024-05-17
 
