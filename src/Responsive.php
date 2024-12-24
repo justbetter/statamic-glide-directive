@@ -81,7 +81,7 @@ class Responsive
             }
 
             if (self::canUseMimeTypeSource()) {
-                if ($glideUrl = self::getGlideUrl($asset, $fit ?? $data['fit'], $preset)) {
+                if ($glideUrl = self::getGlideUrl($asset, $preset, $fit ?? $data['fit'], $asset->mimeType())) {
                     $presets[$asset->mimeType()] .= $glideUrl.' '.$size;
 
                     if ($preset !== 'placeholder') {
