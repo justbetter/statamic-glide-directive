@@ -1,6 +1,11 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.0...master)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.1...2.6.1)
+## [2.6.1](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.1) - 2024-12-24
+
+### Fixed
+- Fix order of parameters (#16)
+
 ## [2.6.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.0) - 2024-12-11
 
 ### Changed
