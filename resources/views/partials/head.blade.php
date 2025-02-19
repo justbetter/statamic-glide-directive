@@ -8,6 +8,10 @@ window.responsiveResizeObserver = new ResizeObserver(async (entries) => {
         }
         
         requestAnimationFrame(() => {
+            if (!entry?.target?.parentNode) {
+                return
+            }
+            
             entry.target.parentNode.querySelectorAll('source').forEach((source) => {
                 source.sizes = imgWidth + 'px'
             })
