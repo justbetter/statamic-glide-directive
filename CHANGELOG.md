@@ -1,6 +1,11 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.1...2.6.1)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.2...2.6.2)
+## [2.6.2](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.2) - 2025-02-19
+
+### Fixed
+- Check for parent node before using it by @Jade-GG in https://github.com/justbetter/statamic-glide-directive/pull/17
+
 ## [2.6.1](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.1) - 2024-12-24
 
 ### Fixed
