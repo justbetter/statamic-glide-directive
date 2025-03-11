@@ -2,6 +2,7 @@
 
 namespace JustBetter\GlideDirective\Tests;
 
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Queue;
 use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
 use JustBetter\GlideDirective\Responsive;
@@ -87,7 +88,7 @@ class ResponsiveTest extends TestCase
         $view = Responsive::handle($asset);
         /* @phpstan-ignore-next-line */
         $view->render();
-        Queue::assertPushed(GenerateGlideImageJob::class);
+        Bus::dispatchAfterResponse(GenerateGlideImageJob::class);
 
         // Test cached image
         Statamic::tag('glide')->params([
