@@ -39,6 +39,10 @@ class Responsive
 
     public static function getPresets(Asset $asset): array
     {
+        if ($asset->width() <= config('justbetter.glide-directive.image_resize_threshold')) {
+            return [];
+        }
+
         $config = config('statamic.assets.image_manipulation.presets');
 
         if (! config('justbetter.glide-directive.placeholder') && isset($config['placeholder'])) {

@@ -32,4 +32,7 @@ return [
 
     // Set the default queue to use for generating the images.
     'default_queue' => env('STATAMIC_GLIDE_DIRECTIVE_DEFAULT_QUEUE', 'default'),
+
+    // Set the threshold width to use for the image source sets.
+    'image_resize_threshold' => 480
 ];
