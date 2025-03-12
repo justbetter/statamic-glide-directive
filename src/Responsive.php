@@ -145,7 +145,11 @@ class Responsive
             return URL::encode($url);
         }
 
-        GenerateGlideImageJob::dispatchAfterResponse($asset, $preset, $fit, $format);
+        if (config('queue.default') === 'redis') {
+            GenerateGlideImageJob::dispatch($asset, $preset, $fit, $format);
+        } else {
+            GenerateGlideImageJob::dispatchAfterResponse($asset, $preset, $fit, $format);
+        }
 
         return null;
     }
