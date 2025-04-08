@@ -1,6 +1,12 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.2...2.6.2)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.3...2.6.3)
+## [2.6.3](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.3) - 2025-04-08
+
+### Fixed
+
+- Only use a picture tag when the threshold width matches (#18)
+
 ## [2.6.2](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.2) - 2025-02-19
 
 ### Fixed
