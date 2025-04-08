@@ -39,6 +39,10 @@ class Responsive
 
     public static function getPresets(Asset $asset): array
     {
+        if ($asset->width() <= config('justbetter.glide-directive.image_resize_threshold')) {
+            return [];
+        }
+
         $config = config('statamic.assets.image_manipulation.presets');
 
         if (! config('justbetter.glide-directive.placeholder') && isset($config['placeholder'])) {
@@ -141,7 +145,11 @@ class Responsive
             return URL::encode($url);
         }
 
-        GenerateGlideImageJob::dispatch($asset, $preset, $fit, $format);
+        if (config('queue.default') === 'redis') {
+            GenerateGlideImageJob::dispatch($asset, $preset, $fit, $format);
+        } else {
+            GenerateGlideImageJob::dispatchAfterResponse($asset, $preset, $fit, $format);
+        }
 
         return null;
     }
