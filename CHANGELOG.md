@@ -1,6 +1,12 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.3...2.6.3)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.4...2.6.4)
+## [2.6.4](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.4) - 2025-04-11
+
+### Fixed
+
+- Handle the Laravel requirement through the Statamic requirement (761528f)
+
 ## [2.6.3](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.3) - 2025-04-08
 
 ### Fixed
