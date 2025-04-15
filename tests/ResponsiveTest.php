@@ -23,6 +23,7 @@ class ResponsiveTest extends TestCase
             'placeholder' => ['w' => 32, 'h' => 32, 'q' => 100, 'fit' => 'contain'],
             'xs' => ['w' => 320, 'h' => 320, 'q' => 100, 'fit' => 'contain'],
             'sm' => ['w' => 640, 'h' => 640, 'q' => 100, 'fit' => 'contain'],
+            'sm-h' => ['w' => null, 'h' => 640, 'q' => 100, 'fit' => 'contain'],
         ]);
     }
 
@@ -103,6 +104,29 @@ class ResponsiveTest extends TestCase
         $this->assertStringContainsString('src="', $rendered);
         $this->assertStringContainsString('.png', $rendered);
 
+        $asset->delete();
+    }
+
+    #[Test]
+    public function it_creates_mime_type_source_when_configured(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+        config()->set('justbetter.glide-directive.sources', 'mime_type');
+        
+        $view = Responsive::handle($asset);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+
+        $this->assertStringNotContainsString('<source type="image/webp"', $rendered);
+        
+        config()->set('justbetter.glide-directive.sources', 'webp');
+        
+        $view = Responsive::handle($asset);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+        
+        $this->assertStringNotContainsString('<source type="image/png"', $rendered);
+        
         $asset->delete();
     }
 }
