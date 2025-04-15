@@ -1,6 +1,12 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.4...2.6.4)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.5...2.6.5)
+## [2.6.5](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.5) - 2025-04-15
+
+### Fixed
+
+- Fix empty srcset w rows (#19)
+
 ## [2.6.4](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.4) - 2025-04-11
 
 ### Fixed
