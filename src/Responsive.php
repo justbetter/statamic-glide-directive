@@ -68,6 +68,10 @@ class Responsive
         $index = 0;
 
         foreach ($configPresets as $preset => $data) {
+            if(!($data['w'] ?? false)) {
+                continue;
+            }
+
             $size = $data['w'].'w';
 
             if ($index < (count($configPresets) - 1)) {
