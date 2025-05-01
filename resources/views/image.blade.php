@@ -10,20 +10,20 @@
                     height="{{ $height }}"
                 />
             @else
-                @isset($presets['webp'])
+                @if(isset($presets['webp']))
                     <source
                         srcset="{{ $presets['webp'] }}"
                         sizes="32px"
                         type="image/webp"
                     >
-                @endisset
-                @isset($presets[$image->mimeType()])
+                @endif
+                @if(isset($presets[$image->mimeType()]) && $image->mimeType() !== 'image/webp')
                     <source
                         srcset="{{ $presets[$image->mimeType()] }}"
                         sizes="32px"
                         type="{{ $image->mimeType() }}"
                     >
-                @endisset
+                @endif
                 <img
                         {!! $attributes ?? '' !!}
                         class="{{ $class }}"
