@@ -16,7 +16,7 @@ composer require justbetter/statamic-glide-directive
 ```
 
 ## Usage
-This package adds a Blade directive. You can use an asset in the directive, and it will render the image according to the presets defined in the config. Here’s an example:
+This package adds a Blade directive. You can use an asset in the directive, and it will render the image according to the presets defined in the config. Here's an example:
 
 ```php
 @responsive($image, [
@@ -31,17 +31,22 @@ To allow images to change on resize, include this in your head:
 @include('statamic-glide-directive::partials.head')
 ```
 
-We recommend generating your presets using:
+### Image Generation
+
+Images are served directly through custom routes that properly handle the content type and caching. When a preset image is requested, it's generated on demand and stored in the public directory.
+
+We recommend pre-generating your presets for optimal performance:
 ```bash
 php please assets:generate-presets
 ```
 
-For performance, consider using Redis for your queue connection. If kept on sync, images will be generated on the fly, affecting page load times. When using Redis, images will also be created on the fly while processing jobs in the queue. If an image doesn't have a Glide preset ready, the original image URL will be used for the first page load.
-
-To ensure that the image generation does not block the response, we're using the `dispatchAfterResponse` method when generating the resizes:
+For larger sites with many images, consider using Redis for your queue connection:
 ```php
-GenerateGlideImageJob::dispatchAfterResponse($asset, $preset, $fit, $format);
+// Set in your .env file
+QUEUE_CONNECTION=redis
 ```
+
+When using a queue (like Redis), image generation will happen in the background without affecting page load times. If an image preset hasn't been generated yet, a placeholder will be used temporarily until the optimized version is ready.
 
 ## Config
 The package has default configurations. By default, it will use the presets defined in this addon's config. If you've defined your asset presets in the Statamic config, those will be used.
@@ -78,7 +83,7 @@ Configure which sources to use. By default, only WebP sources are used. You can 
 'sources' => 'webp',
 ```
 
-### Publish
+### Publish Configuration
 ```bash
 php artisan vendor:publish --provider="JustBetter\ImageOptimize\ServiceProvider"
 ```

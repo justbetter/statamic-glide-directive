@@ -4,15 +4,12 @@ namespace JustBetter\GlideDirective;
 
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
+use League\Glide\Signatures\SignatureFactory;
 use Statamic\Assets\Asset;
 use Statamic\Contracts\Imaging\ImageManipulator;
-use Statamic\Facades\Glide;
 use Statamic\Facades\Image;
-use Statamic\Facades\URL;
 use Statamic\Fields\Value;
 use Statamic\Statamic;
-use Statamic\Support\Str;
 
 class Responsive
 {
@@ -68,7 +65,7 @@ class Responsive
         $index = 0;
 
         foreach ($configPresets as $preset => $data) {
-            if(!($data['w'] ?? false)) {
+            if (! ($data['w'] ?? false)) {
                 continue;
             }
 
@@ -89,7 +86,7 @@ class Responsive
             }
 
             if (self::canUseMimeTypeSource()) {
-                if ($glideUrl = self::getGlideUrl($asset, $preset, $fit ?? $data['fit'], $asset->mimeType())) {
+                if ($glideUrl = self::getGlideUrl($asset, $preset, $fit ?? $data['fit'], $asset->extension())) {
                     $presets[$asset->mimeType()] .= $glideUrl.' '.$size;
 
                     if ($preset !== 'placeholder') {
@@ -125,37 +122,21 @@ class Responsive
     protected static function getGlideUrl(Asset $asset, string $preset, string $fit, ?string $format = null): ?string
     {
         if ($preset === 'placeholder') {
-            return Statamic::tag('glide:data_url')->params([
-                'preset' => $preset,
-                'src' => $asset->url(),
-                'format' => $format,
-                'fit' => $fit,
-            ])->fetch();
+            return route('glide-image.placeholder', [
+                'file' => ltrim($asset->url(), '/'),
+            ]);
         }
 
-        $manipulator = self::getManipulator($asset, $preset, $fit, $format);
+        $signatureFactory = SignatureFactory::create(config('app.key'));
+        $signature = $signatureFactory->generateSignature($asset->url(), ['preset' => $preset, 'fit' => $fit, 'format' => '.'.$format]);
 
-        if (is_string($manipulator)) {
-            return null;
-        }
-
-        $params = $manipulator->getParams();
-
-        $manipulationCacheKey = 'asset::'.$asset->id().'::'.md5(json_encode($params) ? json_encode($params) : '');
-
-        if ($cachedUrl = Glide::cacheStore()->get($manipulationCacheKey)) {
-            $url = Str::ensureLeft(config('statamic.assets.image_manipulation.route'), '/').'/'.$cachedUrl;
-
-            return URL::encode($url);
-        }
-
-        if (config('queue.default') === 'redis') {
-            GenerateGlideImageJob::dispatch($asset, $preset, $fit, $format);
-        } else {
-            GenerateGlideImageJob::dispatchAfterResponse($asset, $preset, $fit, $format);
-        }
-
-        return null;
+        return route('glide-image.preset', [
+            'file' => ltrim($asset->url(), '/'),
+            'signature' => $signature,
+            'preset' => $preset,
+            'fit' => $fit,
+            'format' => '.'.$format,
+        ]);
     }
 
     protected static function getManipulator(Asset $item, string $preset, string $fit, ?string $format = null): ImageManipulator|string

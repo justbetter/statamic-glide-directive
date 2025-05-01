@@ -2,14 +2,9 @@
 
 namespace JustBetter\GlideDirective\Tests;
 
-use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Queue;
-use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
 use JustBetter\GlideDirective\Responsive;
 use PHPUnit\Framework\Attributes\Test;
-use Statamic\Facades\Glide;
 use Statamic\Fields\Value;
-use Statamic\Statamic;
 
 class ResponsiveTest extends TestCase
 {
@@ -78,55 +73,25 @@ class ResponsiveTest extends TestCase
     }
 
     #[Test]
-    public function it_handles_image_generation(): void
-    {
-        Queue::fake();
-        $asset = $this->uploadTestAsset('upload.png');
-
-        // Test uncached image
-        /* @phpstan-ignore-next-line */
-        Glide::cacheStore()->flush();
-        $view = Responsive::handle($asset);
-        /* @phpstan-ignore-next-line */
-        $view->render();
-        Bus::dispatchAfterResponse(GenerateGlideImageJob::class);
-
-        // Test cached image
-        Statamic::tag('glide')->params([
-            'src' => $asset->url(),
-            'preset' => 'xs',
-        ])->fetch();
-
-        $view = Responsive::handle($asset);
-        /* @phpstan-ignore-next-line */
-        $rendered = $view->render();
-
-        $this->assertStringContainsString('src="', $rendered);
-        $this->assertStringContainsString('.png', $rendered);
-
-        $asset->delete();
-    }
-
-    #[Test]
     public function it_creates_mime_type_source_when_configured(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
         config()->set('justbetter.glide-directive.sources', 'mime_type');
-        
+
         $view = Responsive::handle($asset);
         /* @phpstan-ignore-next-line */
         $rendered = $view->render();
 
         $this->assertStringNotContainsString('<source type="image/webp"', $rendered);
-        
+
         config()->set('justbetter.glide-directive.sources', 'webp');
-        
+
         $view = Responsive::handle($asset);
         /* @phpstan-ignore-next-line */
         $rendered = $view->render();
-        
+
         $this->assertStringNotContainsString('<source type="image/png"', $rendered);
-        
+
         $asset->delete();
     }
 }
