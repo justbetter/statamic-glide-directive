@@ -46,7 +46,7 @@ class ImageController extends Controller
     protected static function getManipulator(AssetContract $asset, string $preset, string $fit, ?string $format = null): ImageManipulator|string
     {
         $manipulator = Image::manipulate($asset);
-        collect(['p' => $preset, 'fm' => $format, 'fit' => $fit])->each(fn ($value, $param) => $manipulator->$param($value));
+        collect(['p' => $preset, 'fm' => $format, 'fit' => $fit])->each(fn (string $value, string $param) => $manipulator->$param($value));
 
         return $manipulator;
     }
