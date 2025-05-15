@@ -128,15 +128,11 @@ class Responsive
         }
 
         $signatureFactory = SignatureFactory::create(config('app.key'));
-        $signature = $signatureFactory->generateSignature($asset->url(), ['preset' => $preset, 'fit' => $fit, 'format' => '.'.$format]);
+        $params = $signatureFactory->addSignature($asset->url(), ['preset' => $preset, 'fit' => $fit, 'format' => '.'.$format]);
 
-        return route('glide-image.preset', [
+        return route('glide-image.preset', array_merge($params, [
             'file' => ltrim($asset->url(), '/'),
-            'signature' => $signature,
-            'preset' => $preset,
-            'fit' => $fit,
-            'format' => '.'.$format,
-        ]);
+        ]));
     }
 
     protected static function getManipulator(Asset $item, string $preset, string $fit, ?string $format = null): ImageManipulator|string

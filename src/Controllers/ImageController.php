@@ -13,15 +13,25 @@ use Statamic\Contracts\Imaging\ImageManipulator;
 use Statamic\Facades\Asset as AssetFacade;
 use Statamic\Facades\Image;
 use Statamic\Imaging\GlideImageManipulator;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use League\Glide\Signatures\Signature;
+use League\Glide\Signatures\SignatureException;
 
 class ImageController extends Controller
 {
-    public function getPreset(Request $request, string $preset, string $fit, string $signature, string $file, string $format): Response
+    public function getPreset(Request $request, string $preset, string $fit, string $signature, string $file, string $format): BinaryFileResponse
     {
         /** @var ?Asset $asset */
         $asset = AssetFacade::findByUrl(Str::start($file, '/'));
 
         if (! $asset) {
+            abort(404);
+        }
+
+        try {
+            $signatureFactory = new Signature(config('app.key'));
+            $signatureFactory->validateRequest($asset->url(), ['s' => $signature, 'preset' => $preset, 'fit' => $fit, 'format' => $format]);
+        } catch (SignatureException $e) {
             abort(404);
         }
 
@@ -36,11 +46,11 @@ class ImageController extends Controller
         }
 
         $contentType = $asset->mimeType();
-        $fileContent = file_get_contents($publicPath) ?: '';
 
-        return response($fileContent)
-            ->header('Content-Type', $contentType)
-            ->header('Cache-Control', 'public, max-age=31536000');
+        return new BinaryFileResponse($publicPath, 200, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'public, max-age=31536000',
+        ]);
     }
 
     protected static function getManipulator(AssetContract $asset, string $preset, string $fit, ?string $format = null): ImageManipulator|string
