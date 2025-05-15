@@ -82,14 +82,6 @@ class ImageController extends Controller
         ]);
     }
 
-    protected function getManipulator(): ImageManipulator|string
-    {
-        $manipulator = Image::manipulate($this->asset);
-        collect(['p' => $this->params['preset'], 'fm' => $this->params['format'], 'fit' => $this->params['fit']])->each(fn (?string $value, ?string $param) => $manipulator->$param($value));
-
-        return $manipulator;
-    }
-
     protected function buildImage(): ?string
     {
         if (! $this->asset) {

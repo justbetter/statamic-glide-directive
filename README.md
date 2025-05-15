@@ -34,19 +34,12 @@ To allow images to change on resize, include this in your head:
 ### Image Generation
 
 Images are served directly through custom routes that properly handle the content type and caching. When a preset image is requested, it's generated on demand and stored in the public directory.
+If an image preset hasn't been generated yet, a placeholder will be used temporarily until the optimized version is ready.
 
 We recommend pre-generating your presets for optimal performance:
 ```bash
 php please assets:generate-presets
 ```
-
-For larger sites with many images, consider using Redis for your queue connection:
-```php
-// Set in your .env file
-QUEUE_CONNECTION=redis
-```
-
-When using a queue (like Redis), image generation will happen in the background without affecting page load times. If an image preset hasn't been generated yet, a placeholder will be used temporarily until the optimized version is ready.
 
 ## Config
 The package has default configurations. By default, it will use the presets defined in this addon's config. If you've defined your asset presets in the Statamic config, those will be used.
