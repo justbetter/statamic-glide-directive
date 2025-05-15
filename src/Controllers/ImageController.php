@@ -7,6 +7,8 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 use JustBetter\GlideDirective\Responsive;
+use League\Glide\Signatures\Signature;
+use League\Glide\Signatures\SignatureException;
 use Statamic\Assets\Asset;
 use Statamic\Contracts\Assets\Asset as AssetContract;
 use Statamic\Contracts\Imaging\ImageManipulator;
@@ -14,8 +16,6 @@ use Statamic\Facades\Asset as AssetFacade;
 use Statamic\Facades\Image;
 use Statamic\Imaging\GlideImageManipulator;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use League\Glide\Signatures\Signature;
-use League\Glide\Signatures\SignatureException;
 
 class ImageController extends Controller
 {
@@ -56,7 +56,7 @@ class ImageController extends Controller
     protected static function getManipulator(AssetContract $asset, string $preset, string $fit, ?string $format = null): ImageManipulator|string
     {
         $manipulator = Image::manipulate($asset);
-        collect(['p' => $preset, 'fm' => $format, 'fit' => $fit])->each(fn (string $value, string $param) => $manipulator->$param($value));
+        collect(['p' => $preset, 'fm' => $format, 'fit' => $fit])->each(fn (?string $value, ?string $param) => $manipulator->$param($value));
 
         return $manipulator;
     }
