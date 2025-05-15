@@ -16,6 +16,6 @@ Route::get('glide-image/placeholder/{file}', [ImageController::class, 'placehold
     ->where($patterns)
     ->name('glide-image.placeholder');
 
-Route::get('storage/glide-image/{preset}/{fit}/{s}/{file}{format}', [ImageController::class, 'getPreset'])
+Route::get('img/'.config('justbetter.glide-directive.storage_prefix', 'storage/glide-image').'/{preset}/{fit}/{s}/{file}{format}', [ImageController::class, 'getImageByPreset'])
     ->where($patterns)
     ->name('glide-image.preset');

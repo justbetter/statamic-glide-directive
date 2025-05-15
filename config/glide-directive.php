@@ -35,4 +35,7 @@ return [
 
     // Set the threshold width to use for the image source sets.
     'image_resize_threshold' => 480,
+
+    // Set the storage prefix to use for the image source sets.
+    'storage_prefix' => 'storage/glide-image',
 ];

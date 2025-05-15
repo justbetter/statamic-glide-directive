@@ -40,7 +40,7 @@ class ImageControllerTest extends TestCase
     {
         $this->expectException(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
 
-        $this->controller->getPreset(
+        $this->controller->getImageByPreset(
             request(),
             'xs',
             'contain',
