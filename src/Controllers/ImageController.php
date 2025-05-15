@@ -7,7 +7,8 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 use JustBetter\GlideDirective\Responsive;
-use Statamic\Contracts\Assets\Asset;
+use Statamic\Assets\Asset;
+use Statamic\Contracts\Assets\Asset as AssetContract;
 use Statamic\Contracts\Imaging\ImageManipulator;
 use Statamic\Facades\Asset as AssetFacade;
 use Statamic\Facades\Image;
@@ -17,6 +18,7 @@ class ImageController extends Controller
 {
     public function getPreset(Request $request, string $preset, string $fit, string $signature, string $file, string $format): Response
     {
+        /** @var ?Asset $asset */
         $asset = AssetFacade::findByUrl(Str::start($file, '/'));
 
         if (! $asset) {
@@ -33,7 +35,6 @@ class ImageController extends Controller
             abort(404);
         }
 
-        /* @phpstan-ignore-next-line */
         $contentType = $asset->mimeType();
         $fileContent = file_get_contents($publicPath) ?: '';
 
@@ -42,7 +43,7 @@ class ImageController extends Controller
             ->header('Cache-Control', 'public, max-age=31536000');
     }
 
-    protected static function getManipulator(Asset $asset, string $preset, string $fit, ?string $format = null): ImageManipulator|string
+    protected static function getManipulator(AssetContract $asset, string $preset, string $fit, ?string $format = null): ImageManipulator|string
     {
         $manipulator = Image::manipulate($asset);
         collect(['p' => $preset, 'fm' => $format, 'fit' => $fit])->each(fn ($value, $param) => $manipulator->$param($value));
@@ -52,18 +53,17 @@ class ImageController extends Controller
 
     public function placeholder(Request $request, string $file, string $webp = ''): Response
     {
+        /** @var ?Asset $asset */
         $asset = AssetFacade::findByUrl(Str::start($file, '/'));
 
         if (! $asset) {
             abort(404);
         }
 
-        /* @phpstan-ignore-next-line */
         $presets = Responsive::getPresets($asset);
         $base64Image = $presets['placeholder'] ?? '';
         $base64Content = preg_replace('/^data:image\/\w+;base64,/', '', $base64Image);
         $imageData = base64_decode($base64Content);
-        /* @phpstan-ignore-next-line */
         $mimeType = $asset->mimeType();
 
         return response($imageData)
