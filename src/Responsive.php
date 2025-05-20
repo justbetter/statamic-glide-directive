@@ -122,9 +122,12 @@ class Responsive
     protected static function getGlideUrl(Asset $asset, string $preset, string $fit, ?string $format = null): ?string
     {
         if ($preset === 'placeholder') {
-            return route('glide-image.placeholder', [
-                'file' => ltrim($asset->url(), '/'),
-            ]);
+            return Statamic::tag('glide:data_url')->params([
+                'preset' => $preset,
+                'src' => $asset->url(),
+                'format' => $format,
+                'fit' => $fit,
+            ])->fetch();
         }
 
         $signatureFactory = SignatureFactory::create(config('app.key'));
