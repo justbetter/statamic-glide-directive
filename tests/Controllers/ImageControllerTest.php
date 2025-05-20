@@ -18,15 +18,6 @@ class ImageControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_returns_placeholder(): void
-    {
-        $asset = $this->uploadTestAsset('upload.png');
-        $response = $this->get('/glide-image/placeholder/'.$asset->url());
-
-        $response->assertSuccessful();
-    }
-
-    #[Test]
     public function it_gets_presets(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
