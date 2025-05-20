@@ -14,9 +14,7 @@ use League\Glide\Signatures\Signature;
 use League\Glide\Signatures\SignatureException;
 use Statamic\Assets\Asset;
 use Statamic\Contracts\Assets\Asset as AssetContract;
-use Statamic\Contracts\Imaging\ImageManipulator;
 use Statamic\Facades\Asset as AssetFacade;
-use Statamic\Facades\Image;
 use Statamic\Imaging\ImageGenerator;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -90,7 +88,7 @@ class ImageController extends Controller
 
         $this->server->setSource(Storage::build(['driver' => 'local', 'root' => public_path()])->getDriver());
         $this->server->setSourcePathPrefix('/');
-        $this->server->setCachePathPrefix(config('justbetter.glide-directive.storage_prefix', 'storage/glide-image').'/'.$this->params['preset'].'/'.$this->params['fit'].'/'.$this->params['s']);
+        $this->server->setCachePathPrefix(config('justbetter.glide-directive.storage_prefix', 'glide-image').'/'.$this->params['preset'].'/'.$this->params['fit'].'/'.$this->params['s']);
         $this->server->setCachePathCallable($this->getCachePathCallable());
 
         $path = $this->server->makeImage($this->asset->url(), $this->params);
