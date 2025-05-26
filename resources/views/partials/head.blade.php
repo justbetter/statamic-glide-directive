@@ -1,9 +1,13 @@
 <script>
 window.responsiveResizeObserver = new ResizeObserver(async (entries) => {
     entries.forEach(entry => {
-        let imgWidth = entry?.devicePixelContentBoxSize?.[0]?.inlineSize || (entry?.borderBoxSize[0]?.inlineSize * window.devicePixelRatio) || 0;
-        
-        if (imgWidth === 0) {
+        let imgWidth = null
+        imgWidth ||= entry?.devicePixelContentBoxSize?.[0]?.inlineSize
+        imgWidth ||= entry?.borderBoxSize?.[0]?.inlineSize * window.devicePixelRatio
+        imgWidth ||= entry?.contentBoxSize?.[0]?.inlineSize * window.devicePixelRatio
+        imgWidth ||= entry?.contentRect?.width * window.devicePixelRatio
+
+        if (!imgWidth) {
             return;
         }
         
