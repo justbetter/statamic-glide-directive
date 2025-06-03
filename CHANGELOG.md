@@ -1,6 +1,11 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.6.5...2.6.5)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.7.0...2.7.0)
+## [2.7.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.7.0) - 2025-06-03
+
+### Fixed
+ - Add fallback chain for compatibility
+
 ## [2.6.5](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.6.5) - 2025-04-15
 
 ### Fixed
