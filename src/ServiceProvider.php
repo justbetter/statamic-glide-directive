@@ -13,6 +13,7 @@ class ServiceProvider extends AddonServiceProvider
             ->bootConfig()
             ->bootDirectives()
             ->bootViews()
+            ->bootRoutes()
             ->bootClasses();
     }
 
@@ -36,6 +37,13 @@ class ServiceProvider extends AddonServiceProvider
         Blade::directive('responsive', function ($expression) {
             return "<?php echo \JustBetter\GlideDirective\Responsive::handle({$expression}); ?>";
         });
+
+        return $this;
+    }
+
+    protected function bootRoutes(): static
+    {
+        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
 
         return $this;
     }

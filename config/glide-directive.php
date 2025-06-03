@@ -34,5 +34,11 @@ return [
     'default_queue' => env('STATAMIC_GLIDE_DIRECTIVE_DEFAULT_QUEUE', 'default'),
 
     // Set the threshold width to use for the image source sets.
-    'image_resize_threshold' => 480
+    'image_resize_threshold' => 480,
+
+    // Set the cache prefix to use for the image source sets.
+    'cache_prefix' => 'img',
+
+    // Set the storage prefix to use for the image source sets.
+    'storage_prefix' => 'glide-image',
 ];
