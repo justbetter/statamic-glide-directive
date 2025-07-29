@@ -23,8 +23,6 @@ class Responsive
             return '';
         }
 
-
-
         return view('statamic-glide-directive::image', [
             'image' => $asset,
             'default_preset' => self::getDefaultPreset($asset),
@@ -122,7 +120,7 @@ class Responsive
         return array_filter($presets);
     }
 
-    protected static function getDefaultPreset(Asset $asset): string
+    protected static function getDefaultPreset(Asset $asset): ?string
     {
         $assetMeta = $asset->meta();
         $fit = isset($assetMeta['data']['focus']) ? sprintf('crop-%s', $assetMeta['data']['focus']) : null;
@@ -131,7 +129,7 @@ class Responsive
         $configPresets = self::getPresetsByRatio($asset, $config);
         $defaultPreset = $configPresets[config('justbetter.glide-directive.default_preset')] ?? false;
 
-        if(!$defaultPreset) {
+        if (! $defaultPreset) {
             return $asset->url();
         }
 
@@ -175,7 +173,6 @@ class Responsive
     {
         $presets = collect($config);
 
-        // filter config based on aspect ratio
         $vertical = $asset->height() > $asset->width();
         $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || (($preset['h'] > $preset['w']) === $vertical));
 

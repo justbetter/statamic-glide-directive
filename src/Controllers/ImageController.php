@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ImageController extends Controller
 {
-    protected ?AssetContract $asset;
+    protected null|Asset|AssetContract $asset;
 
     protected array $params;
 
@@ -39,6 +39,7 @@ class ImageController extends Controller
         } catch (SignatureException $e) {
             abort(404);
         }
+
         $path = $this->buildImage();
         $cachePath = config('statamic.assets.image_manipulation.cache_path');
         $publicPath = $cachePath.'/'.$path;
@@ -47,6 +48,7 @@ class ImageController extends Controller
             abort(404);
         }
 
+        // @phpstan-ignore-next-line
         $contentType = $this->asset->mimeType();
 
         return new BinaryFileResponse($publicPath, 200, [
