@@ -1,6 +1,12 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/2.7.0...2.7.0)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.0.0...3.0.0)
+## [3.0.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.0.0) - 2025-07-29
+
+### Changed
+
+- Image generation refactor (#20)
+
 ## [2.7.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/2.7.0) - 2025-06-03
 
 ### Fixed
