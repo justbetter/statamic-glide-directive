@@ -4,15 +4,12 @@ namespace JustBetter\GlideDirective;
 
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use JustBetter\GlideDirective\Jobs\GenerateGlideImageJob;
+use League\Glide\Signatures\SignatureFactory;
 use Statamic\Assets\Asset;
 use Statamic\Contracts\Imaging\ImageManipulator;
-use Statamic\Facades\Glide;
 use Statamic\Facades\Image;
-use Statamic\Facades\URL;
 use Statamic\Fields\Value;
 use Statamic\Statamic;
-use Statamic\Support\Str;
 
 class Responsive
 {
@@ -28,6 +25,7 @@ class Responsive
 
         return view('statamic-glide-directive::image', [
             'image' => $asset,
+            'default_preset' => self::getDefaultPreset($asset),
             'presets' => self::getPresets($asset),
             'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
@@ -68,7 +66,7 @@ class Responsive
         $index = 0;
 
         foreach ($configPresets as $preset => $data) {
-            if(!($data['w'] ?? false)) {
+            if (! isset($data['w'])) {
                 continue;
             }
 
@@ -89,7 +87,7 @@ class Responsive
             }
 
             if (self::canUseMimeTypeSource()) {
-                if ($glideUrl = self::getGlideUrl($asset, $preset, $fit ?? $data['fit'], $asset->mimeType())) {
+                if ($glideUrl = self::getGlideUrl($asset, $preset, $fit ?? $data['fit'], $asset->extension())) {
                     $presets[$asset->mimeType()] .= $glideUrl.' '.$size;
 
                     if ($preset !== 'placeholder') {
@@ -122,6 +120,27 @@ class Responsive
         return array_filter($presets);
     }
 
+    protected static function getDefaultPreset(Asset $asset): ?string
+    {
+        $assetMeta = $asset->meta();
+        $fit = isset($assetMeta['data']['focus']) ? sprintf('crop-%s', $assetMeta['data']['focus']) : null;
+
+        $config = config('statamic.assets.image_manipulation.presets');
+        $configPresets = self::getPresetsByRatio($asset, $config);
+        $defaultPreset = $configPresets[config('justbetter.glide-directive.default_preset')] ?? false;
+
+        if (! $defaultPreset) {
+            return $asset->url();
+        }
+
+        return self::getGlideUrl(
+            $asset,
+            config('justbetter.glide-directive.default_preset', 'sm'),
+            $fit ?? ($defaultPreset['fit'] ?? 'contain'),
+            self::canUseWebpSource() ? 'webp' : $asset->mimeType()
+        );
+    }
+
     protected static function getGlideUrl(Asset $asset, string $preset, string $fit, ?string $format = null): ?string
     {
         if ($preset === 'placeholder') {
@@ -133,29 +152,12 @@ class Responsive
             ])->fetch();
         }
 
-        $manipulator = self::getManipulator($asset, $preset, $fit, $format);
+        $signatureFactory = SignatureFactory::create(config('app.key'));
+        $params = $signatureFactory->addSignature($asset->url(), ['preset' => $preset, 'fit' => $fit, 'format' => '.'.$format]);
 
-        if (is_string($manipulator)) {
-            return null;
-        }
-
-        $params = $manipulator->getParams();
-
-        $manipulationCacheKey = 'asset::'.$asset->id().'::'.md5(json_encode($params) ? json_encode($params) : '');
-
-        if ($cachedUrl = Glide::cacheStore()->get($manipulationCacheKey)) {
-            $url = Str::ensureLeft(config('statamic.assets.image_manipulation.route'), '/').'/'.$cachedUrl;
-
-            return URL::encode($url);
-        }
-
-        if (config('queue.default') === 'redis') {
-            GenerateGlideImageJob::dispatch($asset, $preset, $fit, $format);
-        } else {
-            GenerateGlideImageJob::dispatchAfterResponse($asset, $preset, $fit, $format);
-        }
-
-        return null;
+        return route('glide-image.preset', array_merge($params, [
+            'file' => ltrim($asset->url(), '/'),
+        ]));
     }
 
     protected static function getManipulator(Asset $item, string $preset, string $fit, ?string $format = null): ImageManipulator|string
@@ -171,7 +173,6 @@ class Responsive
     {
         $presets = collect($config);
 
-        // filter config based on aspect ratio
         $vertical = $asset->height() > $asset->width();
         $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || (($preset['h'] > $preset['w']) === $vertical));
 

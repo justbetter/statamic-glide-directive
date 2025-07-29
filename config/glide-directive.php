@@ -5,6 +5,9 @@ return [
     // This will add a blurry image as a placeholder before loading the correct size.
     'placeholder' => true,
 
+    // The default preset used in the img src.
+    'default_preset' => 'sm',
+
     // The default presets used for generating the resizes.
     // If the config in statamic.assets.image_manipulation.presets is empty this will be used instead.
     'presets' => [
@@ -34,5 +37,11 @@ return [
     'default_queue' => env('STATAMIC_GLIDE_DIRECTIVE_DEFAULT_QUEUE', 'default'),
 
     // Set the threshold width to use for the image source sets.
-    'image_resize_threshold' => 480
+    'image_resize_threshold' => 480,
+
+    // Set the cache prefix to use for the image source sets.
+    'cache_prefix' => 'img',
+
+    // Set the storage prefix to use for the image source sets.
+    'storage_prefix' => 'glide-image',
 ];
