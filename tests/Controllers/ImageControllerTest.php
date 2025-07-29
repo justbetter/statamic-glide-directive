@@ -100,8 +100,8 @@ class ImageControllerTest extends TestCase
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
         $params['s'] = $signature;
 
-        $cachePath = config('statamic.assets.image_manipulation.cache_path', 'public/img');
-        $storagePrefix = config('justbetter.glide-directive.storage_prefix', 'glide-image');
+        $cachePath = config('statamic.assets.image_manipulation.cache_path');
+        $storagePrefix = config('justbetter.glide-directive.storage_prefix');
         $expectedImagePath = $cachePath.'/'.$storagePrefix.'/xs/contain/'.$signature.$asset->url().'.webp';
 
         $directory = dirname($expectedImagePath);

@@ -27,7 +27,7 @@
                 <img
                         {!! $attributes ?? '' !!}
                         class="{{ $class }}"
-                        src="{{ $presets['placeholder'] ?? $image->url() }}"
+                        src="{{ $default_preset ?? $image->url() }}"
                         alt="{{ $alt ?? $image->alt() }}"
                         width="{{ $width }}"
                         height="{{ $height }}"

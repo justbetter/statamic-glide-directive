@@ -26,9 +26,7 @@ class ImageController extends Controller
 
     public function getImageByPreset(Request $request, string $preset, string $fit, string $signature, string $file, string $format): BinaryFileResponse
     {
-        /** @var ?Asset $asset */
-        $asset = AssetFacade::findByUrl(Str::start($file, '/'));
-        $this->asset = $asset;
+        $this->asset = AssetFacade::findByUrl(Str::start($file, '/'));
         $this->params = ['s' => $signature, 'preset' => $preset, 'fit' => $fit, 'format' => $format];
 
         if (! $this->asset) {

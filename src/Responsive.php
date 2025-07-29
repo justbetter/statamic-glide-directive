@@ -23,8 +23,11 @@ class Responsive
             return '';
         }
 
+
+
         return view('statamic-glide-directive::image', [
             'image' => $asset,
+            'default_preset' => self::getDefaultPreset($asset),
             'presets' => self::getPresets($asset),
             'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
@@ -65,7 +68,7 @@ class Responsive
         $index = 0;
 
         foreach ($configPresets as $preset => $data) {
-            if (! ($data['w'] ?? false)) {
+            if (! isset($data['w'])) {
                 continue;
             }
 
@@ -117,6 +120,27 @@ class Responsive
         }
 
         return array_filter($presets);
+    }
+
+    protected static function getDefaultPreset(Asset $asset): string
+    {
+        $assetMeta = $asset->meta();
+        $fit = isset($assetMeta['data']['focus']) ? sprintf('crop-%s', $assetMeta['data']['focus']) : null;
+
+        $config = config('statamic.assets.image_manipulation.presets');
+        $configPresets = self::getPresetsByRatio($asset, $config);
+        $defaultPreset = $configPresets[config('justbetter.glide-directive.default_preset')] ?? false;
+
+        if(!$defaultPreset) {
+            return $asset->url();
+        }
+
+        return self::getGlideUrl(
+            $asset,
+            config('justbetter.glide-directive.default_preset', 'sm'),
+            $fit ?? ($defaultPreset['fit'] ?? 'contain'),
+            self::canUseWebpSource() ? 'webp' : $asset->mimeType()
+        );
     }
 
     protected static function getGlideUrl(Asset $asset, string $preset, string $fit, ?string $format = null): ?string

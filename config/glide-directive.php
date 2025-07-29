@@ -5,6 +5,9 @@ return [
     // This will add a blurry image as a placeholder before loading the correct size.
     'placeholder' => true,
 
+    // The default preset used in the img src.
+    'default_preset' => 'sm',
+
     // The default presets used for generating the resizes.
     // If the config in statamic.assets.image_manipulation.presets is empty this will be used instead.
     'presets' => [
