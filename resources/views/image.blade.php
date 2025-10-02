@@ -13,14 +13,14 @@
                 @if(isset($presets['webp']))
                     <source
                         srcset="{{ $presets['webp'] }}"
-                        sizes="100vw"
+                        sizes="32px"
                         type="image/webp"
                     >
                 @endif
                 @if(isset($presets[$image->mimeType()]) && $image->mimeType() !== 'image/webp')
                     <source
                         srcset="{{ $presets[$image->mimeType()] }}"
-                        sizes="100vw"
+                        sizes="32px"
                         type="{{ $image->mimeType() }}"
                     >
                 @endif
