@@ -92,7 +92,7 @@ class ImageControllerTest extends TestCase
 
         $params = [
             's' => '',
-            'preset' => 'xs',
+            'p' => 'xs',
             'fit' => 'contain',
             'format' => '.webp',
         ];
@@ -148,7 +148,7 @@ class ImageControllerTest extends TestCase
         $signatureFactory = new \League\Glide\Signatures\Signature(config('app.key'));
         $params = [
             's' => '',
-            'preset' => 'md',
+            'p' => 'md',
             'fit' => 'crop',
             'format' => '.jpg',
         ];

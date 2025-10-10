@@ -27,7 +27,7 @@ class ImageController extends Controller
     public function getImageByPreset(Request $request, string $preset, string $fit, string $signature, string $file, string $format): BinaryFileResponse
     {
         $this->asset = AssetFacade::findByUrl(Str::start($file, '/'));
-        $this->params = ['s' => $signature, 'preset' => $preset, 'fit' => $fit, 'format' => $format];
+        $this->params = ['s' => $signature, 'p' => $preset, 'fit' => $fit, 'format' => $format];
 
         if (! $this->asset) {
             abort(404);
@@ -65,7 +65,7 @@ class ImageController extends Controller
 
         $this->server->setSource(Storage::build(['driver' => 'local', 'root' => public_path()])->getDriver());
         $this->server->setSourcePathPrefix('/');
-        $this->server->setCachePathPrefix(config('justbetter.glide-directive.storage_prefix', 'glide-image').'/'.$this->params['preset'].'/'.$this->params['fit'].'/'.$this->params['s']);
+        $this->server->setCachePathPrefix(config('justbetter.glide-directive.storage_prefix', 'glide-image').'/'.$this->params['p'].'/'.$this->params['fit'].'/'.$this->params['s']);
         $this->server->setCachePathCallable($this->getCachePathCallable());
 
         $path = $this->server->makeImage($this->asset->url(), $this->params);
@@ -86,5 +86,4 @@ class ImageController extends Controller
         return function () use ($server, $asset, $params) {
             return $server->getCachePathPrefix().$asset->url().$params['format'];
         };
-    }
-}
+    }}

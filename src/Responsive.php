@@ -153,7 +153,7 @@ class Responsive
         }
 
         $signatureFactory = SignatureFactory::create(config('app.key'));
-        $params = $signatureFactory->addSignature($asset->url(), ['preset' => $preset, 'fit' => $fit, 'format' => '.'.$format]);
+        $params = $signatureFactory->addSignature($asset->url(), ['p' => $preset, 'fit' => $fit, 'format' => '.'.$format]);
 
         return route('glide-image.preset', array_merge($params, [
             'file' => ltrim($asset->url(), '/'),
