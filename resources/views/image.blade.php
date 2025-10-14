@@ -5,7 +5,7 @@
                 <img
                     class="{{ $class }}"
                     src="{{ $image->url() }}"
-                    alt="{{ $alt ?: ($image->get('alt') ?? '') }}"
+                    alt="{{ $alt }}"
                     width="{{ $width }}"
                     height="{{ $height }}"
                 />
@@ -28,7 +28,7 @@
                         {!! $attributes ?? '' !!}
                         class="{{ $class }}"
                         src="{{ $default_preset ?? $image->url() }}"
-                        alt="{{ $alt ?: ($image->get('alt') ?? '') }}"
+                        alt="{{ $alt }}"
                         width="{{ $width }}"
                         height="{{ $height }}"
                         loading="lazy"
@@ -44,7 +44,7 @@
             {!! $attributes ?? '' !!}
             class="{{ $class }}"
             src="{{ $image->url() }}"
-            alt="{{ $alt ?: ($image->get('alt') ?? '') }}"
+            alt="{{ $alt }}"
             width="{{ $width }}"
             height="{{ $height }}"
             loading="lazy"
