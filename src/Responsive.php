@@ -29,7 +29,7 @@ class Responsive
             'presets' => self::getPresets($asset),
             'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
-            'alt' => $arguments['alt'] ?? '',
+            'alt' => $arguments['alt'] ?? ($asset->get('alt') ?? ''),
             'width' => $arguments['width'] ?? $asset->width(),
             'height' => $arguments['height'] ?? $asset->height(),
         ]);
