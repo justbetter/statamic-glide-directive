@@ -1,6 +1,11 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.0.1...3.0.1)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.0.2...3.0.2)
+## [3.0.2](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.0.2) - 2025-10-21
+
+### Fixed
+ -  Fix image alt (#23)
+
 ## [3.0.1](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.0.1) - 2025-10-10
 
 ### Fixed
