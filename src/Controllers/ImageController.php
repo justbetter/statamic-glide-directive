@@ -86,4 +86,5 @@ class ImageController extends Controller
         return function () use ($server, $asset, $params) {
             return $server->getCachePathPrefix().$asset->url().$params['format'];
         };
-    }}
+    }
+}
