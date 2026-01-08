@@ -23,7 +23,10 @@ class Responsive
             return '';
         }
 
-        return view('statamic-glide-directive::image', [
+        /** @var view-string $view */
+        $view = 'statamic-glide-directive::image';
+
+        return view($view, [
             'image' => $asset,
             'default_preset' => self::getDefaultPreset($asset),
             'presets' => self::getPresets($asset),

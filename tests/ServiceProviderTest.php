@@ -13,8 +13,8 @@ class ServiceProviderTest extends TestCase
         $compiler = app('blade.compiler');
 
         // Test if the directive is registered
-        $this->assertTrue(method_exists($compiler, 'getCustomDirectives'));
-        $this->assertArrayHasKey('responsive', $compiler->getCustomDirectives());
+        $directives = $compiler->getCustomDirectives();
+        $this->assertArrayHasKey('responsive', $directives);
     }
 
     #[Test]
