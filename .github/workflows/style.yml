@@ -1,32 +1,37 @@
 name: style
 
-on:
-  push:
-    branches:
-      - master
+on: ["push", "pull_request"]
+
 jobs:
-  style:
-    name: Style
-    runs-on: ubuntu-latest
+    test:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: true
+            matrix:
+                os: [ubuntu-latest]
+                php: [8.4]
+                laravel: [12.*]
+                stability: [prefer-stable]
+                include:
+                    - laravel: 12.*
+                      testbench: 10.*
 
-    steps:
-      -   name: Checkout code
-          uses: actions/checkout@v4
+        name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
 
-      -   name: Setup PHP
-          uses: shivammathur/setup-php@v2
-          with:
-            php-version: 8.3
-            extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
-            coverage: none
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      -   name: Install dependencies
-          run: composer install
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php }}
+                  extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+                  coverage: none
 
-      -   name: Style
-          run: composer fix-style
-
-      -   name: Commit Changes
-          uses: stefanzweifel/git-auto-commit-action@v4
-          with:
-            commit_message: Fix styling changes
+            - name: Install dependencies
+              run: |
+                  composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+                  composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+            - name: Execute tests
+              run: composer style
