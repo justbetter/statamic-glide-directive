@@ -37,7 +37,7 @@ class ServiceProviderTest extends TestCase
         $this->uploadTestAsset('upload.png');
 
         $compiler = app('blade.compiler');
-        $template = "@responsive(\$asset)";
+        $template = '@responsive($asset)';
         $compiled = $compiler->compileString($template);
 
         $this->assertStringContainsString('Responsive::handle', $compiled);

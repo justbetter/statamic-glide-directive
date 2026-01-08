@@ -132,11 +132,11 @@ class ResponsiveTest extends TestCase
     public function it_skips_presets_without_width(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
-        
+
         $assetWidth = $asset->width();
         $assetHeight = $asset->height();
         $isVertical = $assetHeight > $assetWidth;
-        
+
         config()->set('statamic.assets.image_manipulation.presets', [
             'xs' => ['w' => $isVertical ? 640 : 320, 'h' => $isVertical ? 320 : 640, 'q' => 100, 'fit' => 'contain'],
             'sm-h' => ['h' => 640, 'q' => 100, 'fit' => 'contain'],
