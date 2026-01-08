@@ -177,7 +177,7 @@ class Responsive
         $presets = collect($config);
 
         $vertical = $asset->height() > $asset->width();
-        $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || (($preset['h'] > $preset['w']) === $vertical));
+        $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || (isset($preset['w'], $preset['h']) && (($preset['h'] > $preset['w']) === $vertical)));
 
         return $presets->isNotEmpty() ? $presets->toArray() : $config;
     }

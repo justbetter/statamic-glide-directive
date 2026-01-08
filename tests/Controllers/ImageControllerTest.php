@@ -5,7 +5,14 @@ namespace JustBetter\GlideDirective\Controllers\Tests;
 use JustBetter\GlideDirective\Controllers\ImageController;
 use JustBetter\GlideDirective\Responsive;
 use JustBetter\GlideDirective\Tests\TestCase;
+use League\Glide\Server;
+use League\Glide\Signatures\Signature;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
+use ReflectionClass;
+use Statamic\Imaging\ImageGenerator;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ImageControllerTest extends TestCase
 {
@@ -29,7 +36,7 @@ class ImageControllerTest extends TestCase
     #[Test]
     public function it_returns_404_for_missing_asset(): void
     {
-        $this->expectException(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
+        $this->expectException(NotFoundHttpException::class);
 
         $this->controller->getImageByPreset(
             request(),
@@ -46,14 +53,14 @@ class ImageControllerTest extends TestCase
     {
         $asset = $this->uploadTestAsset('upload.png');
 
-        $this->expectException(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
+        $this->expectException(NotFoundHttpException::class);
 
         $this->controller->getImageByPreset(
             request(),
             'xs',
             'contain',
             'invalid-signature',
-            $asset->filename(),
+            ltrim($asset->url(), '/'),
             '.webp'
         );
     }
@@ -73,10 +80,10 @@ class ImageControllerTest extends TestCase
                     'md',
                     'crop',
                     'invalid-signature',
-                    $asset->filename(),
+                    ltrim($asset->url(), '/'),
                     $format
                 );
-            } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e) {
+            } catch (NotFoundHttpException $e) {
                 $exceptionThrown = true;
             }
 
@@ -88,7 +95,7 @@ class ImageControllerTest extends TestCase
     public function it_successfully_validates_signature_and_builds_image(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
-        $signatureFactory = new \League\Glide\Signatures\Signature(config('app.key'));
+        $signatureFactory = new Signature(config('app.key'));
 
         $params = [
             's' => '',
@@ -117,11 +124,11 @@ class ImageControllerTest extends TestCase
                 'xs',
                 'contain',
                 $signature,
-                $asset->url(),
+                ltrim($asset->url(), '/'),
                 '.webp'
             );
 
-            $this->assertInstanceOf(\Symfony\Component\HttpFoundation\BinaryFileResponse::class, $response);
+            $this->assertInstanceOf(BinaryFileResponse::class, $response);
             $this->assertEquals(200, $response->getStatusCode());
 
             $this->assertEquals('max-age=31536000, public', $response->headers->get('Cache-Control'));
@@ -145,7 +152,7 @@ class ImageControllerTest extends TestCase
     {
         $asset = $this->uploadTestAsset('upload.png');
 
-        $signatureFactory = new \League\Glide\Signatures\Signature(config('app.key'));
+        $signatureFactory = new Signature(config('app.key'));
         $params = [
             's' => '',
             'p' => 'md',
@@ -155,14 +162,33 @@ class ImageControllerTest extends TestCase
 
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
 
-        $this->expectException(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
+        $storagePrefix = config('justbetter.glide-directive.storage_prefix');
+        $imagePath = $storagePrefix.'/md/crop/'.$signature.$asset->url().'.jpg';
 
-        $this->controller->getImageByPreset(
+        /** @var Server $server */
+        $server = $this->mock(Server::class, function (MockInterface $mock) use ($asset, $signature, $imagePath) {
+            $mock->shouldReceive('setSource')->andReturnSelf();
+            $mock->shouldReceive('setSourcePathPrefix')->andReturnSelf();
+            $mock->shouldReceive('setCachePathPrefix')->andReturnSelf();
+            $mock->shouldReceive('setCachePathCallable')->andReturnSelf();
+            $mock->shouldReceive('makeImage')
+                ->with($asset->url(), ['s' => $signature, 'p' => 'md', 'fit' => 'crop', 'format' => '.jpg'])
+                ->andReturn($imagePath);
+        });
+
+        $controller = new ImageController(
+            app(ImageGenerator::class),
+            $server
+        );
+
+        $this->expectException(NotFoundHttpException::class);
+
+        $controller->getImageByPreset(
             request(),
             'md',
             'crop',
             $signature,
-            $asset->filename(),
+            ltrim($asset->url(), '/'),
             '.jpg'
         );
     }
@@ -183,10 +209,10 @@ class ImageControllerTest extends TestCase
                     $preset,
                     'contain',
                     'invalid-signature',
-                    $asset->filename(),
+                    ltrim($asset->url(), '/'),
                     '.webp'
                 );
-            } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e) {
+            } catch (NotFoundHttpException $e) {
                 $exceptionThrown = true;
             }
 
@@ -210,14 +236,64 @@ class ImageControllerTest extends TestCase
                     'md',
                     $fit,
                     'invalid-signature',
-                    $asset->filename(),
+                    ltrim($asset->url(), '/'),
                     '.webp'
                 );
-            } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e) {
+            } catch (NotFoundHttpException $e) {
                 $exceptionThrown = true;
             }
 
             $this->assertTrue($exceptionThrown, "Expected NotFoundHttpException for fit: {$fit}");
         }
+    }
+
+    #[Test]
+    public function it_handles_null_asset_in_build_image(): void
+    {
+        $controller = new ImageController(
+            app(ImageGenerator::class),
+            app(Server::class)
+        );
+
+        $reflection = new ReflectionClass($controller);
+        $assetProperty = $reflection->getProperty('asset');
+        $assetProperty->setAccessible(true);
+        $assetProperty->setValue($controller, null);
+
+        $paramsProperty = $reflection->getProperty('params');
+        $paramsProperty->setAccessible(true);
+        $paramsProperty->setValue($controller, ['p' => 'xs', 'fit' => 'contain', 's' => 'sig', 'format' => '.webp']);
+
+        $method = $reflection->getMethod('buildImage');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($controller);
+
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function it_handles_null_asset_in_get_cache_path_callable(): void
+    {
+        $controller = new ImageController(
+            app(ImageGenerator::class),
+            app(Server::class)
+        );
+
+        $reflection = new ReflectionClass($controller);
+        $assetProperty = $reflection->getProperty('asset');
+        $assetProperty->setAccessible(true);
+        $assetProperty->setValue($controller, null);
+
+        $paramsProperty = $reflection->getProperty('params');
+        $paramsProperty->setAccessible(true);
+        $paramsProperty->setValue($controller, ['p' => 'xs', 'fit' => 'contain', 's' => 'sig', 'format' => '.webp']);
+
+        $method = $reflection->getMethod('getCachePathCallable');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($controller);
+
+        $this->assertNull($result);
     }
 }
