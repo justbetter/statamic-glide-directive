@@ -1,6 +1,12 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.0.2...3.0.2)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.1.0...3.1.0)
+## [3.1.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.1.0) - 2026-01-13
+
+### Added
+
+- Updated Github workflows & added testing (#24)
+
 ## [3.0.2](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.0.2) - 2025-10-21
 
 ### Fixed
