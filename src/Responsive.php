@@ -23,7 +23,10 @@ class Responsive
             return '';
         }
 
-        return view('statamic-glide-directive::image', [
+        /** @var view-string $view */
+        $view = 'statamic-glide-directive::image';
+
+        return view($view, [
             'image' => $asset,
             'default_preset' => self::getDefaultPreset($asset),
             'presets' => self::getPresets($asset),
@@ -174,7 +177,7 @@ class Responsive
         $presets = collect($config);
 
         $vertical = $asset->height() > $asset->width();
-        $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || (($preset['h'] > $preset['w']) === $vertical));
+        $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || (isset($preset['w'], $preset['h']) && (($preset['h'] > $preset['w']) === $vertical)));
 
         return $presets->isNotEmpty() ? $presets->toArray() : $config;
     }
