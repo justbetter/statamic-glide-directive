@@ -2,10 +2,9 @@
 window.responsiveResizeObserver = new ResizeObserver(async (entries) => {
     entries.forEach(entry => {
         let imgWidth = null
-        imgWidth ||= entry?.devicePixelContentBoxSize?.[0]?.inlineSize
-        imgWidth ||= entry?.borderBoxSize?.[0]?.inlineSize * window.devicePixelRatio
-        imgWidth ||= entry?.contentBoxSize?.[0]?.inlineSize * window.devicePixelRatio
-        imgWidth ||= entry?.contentRect?.width * window.devicePixelRatio
+        imgWidth ||= entry?.contentRect?.width
+        imgWidth ||= entry?.borderBoxSize?.[0]?.inlineSize
+        imgWidth ||= entry?.contentBoxSize?.[0]?.inlineSize
 
         if (!imgWidth) {
             return;
@@ -18,8 +17,8 @@ window.responsiveResizeObserver = new ResizeObserver(async (entries) => {
             
             entry.target.parentNode.querySelectorAll('source').forEach((source) => {
                 source.sizes = imgWidth + 'px'
-            })
+            });
         });
-    })
+    });
 });
 </script>
