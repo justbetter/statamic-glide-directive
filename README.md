@@ -22,9 +22,12 @@ This package adds a Blade directive. You can use an asset in the directive, and 
 @responsive($image, [
     'alt' => 'This is an alt text.', 
     'class' => 'some classes here',
-    'loading' => 'lazy'
+    'loading' => 'lazy',
+    'max_width' => 320
 ])
 ```
+
+When `max_width` (or `rendered_width`) is provided, srcset candidates are capped to that rendered width at 2x DPR.
 
 To allow images to change on resize, include this in your head:
 ```php
@@ -47,13 +50,13 @@ The package has default configurations. By default, it will use the presets defi
 Default config:
 ```php
 'presets' => [
-    'placeholder' => ['w' => 32, 'h' => 32, 'q' => 100, 'fit' => 'crop_focal'],
-    'xs' => ['w' => 320, 'h' => 320, 'q' => 100, 'fit' => 'crop_focal'],
-    'sm' => ['w' => 480, 'h' => 480, 'q' => 100, 'fit' => 'crop_focal'],
-    'md' => ['w' => 768, 'h' => 768, 'q' => 100, 'fit' => 'crop_focal'],
-    'lg' => ['w' => 1280, 'h' => 1280, 'q' => 100, 'fit' => 'crop_focal'],
-    'xl' => ['w' => 1440, 'h' => 1440, 'q' => 100, 'fit' => 'crop_focal'],
-    '2xl' => ['w' => 1680, 'h' => 1680, 'q' => 100, 'fit' => 'crop_focal'],
+    'placeholder' => ['w' => 32, 'h' => 32, 'q' => 100, 'fit' => 'contain'],
+    'xs' => ['w' => 320, 'h' => 320, 'q' => 70, 'fit' => 'contain', 'lossless' => false],
+    'sm' => ['w' => 480, 'h' => 480, 'q' => 75, 'fit' => 'contain', 'lossless' => false],
+    'md' => ['w' => 768, 'h' => 768, 'q' => 80, 'fit' => 'contain', 'lossless' => false],
+    'lg' => ['w' => 1280, 'h' => 1280, 'q' => 82, 'fit' => 'contain', 'lossless' => false],
+    'xl' => ['w' => 1440, 'h' => 1440, 'q' => 82, 'fit' => 'contain', 'lossless' => false],
+    '2xl' => ['w' => 1680, 'h' => 1680, 'q' => 82, 'fit' => 'contain', 'lossless' => false],
 ],
 ```
 

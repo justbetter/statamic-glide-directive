@@ -29,7 +29,7 @@ class Responsive
         return view($view, [
             'image' => $asset,
             'default_preset' => self::getDefaultPreset($asset),
-            'presets' => self::getPresets($asset),
+            'presets' => self::getPresets($asset, $arguments),
             'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
             'alt' => $arguments['alt'] ?? ($asset->get('alt') ?? ''),
@@ -38,7 +38,7 @@ class Responsive
         ]);
     }
 
-    public static function getPresets(Asset $asset): array
+    public static function getPresets(Asset $asset, array $arguments = []): array
     {
         if ($asset->width() <= config('justbetter.glide-directive.image_resize_threshold')) {
             return [];
@@ -61,27 +61,21 @@ class Responsive
         }
 
         $configPresets = self::getPresetsByRatio($asset, $config);
+        $configPresets = self::capPresetsByWidth($asset, $configPresets, $arguments);
         $assetMeta = $asset->meta();
         $fit = isset($assetMeta['data']['focus']) ? sprintf('crop-%s', $assetMeta['data']['focus']) : null;
 
         $webpSourceFound = false;
         $mimeTypeSourceFound = false;
-        $index = 0;
+        $webpSource = [];
+        $mimeTypeSource = [];
 
         foreach ($configPresets as $preset => $data) {
-            if (! isset($data['w'])) {
-                continue;
-            }
-
             $size = $data['w'].'w';
-
-            if ($index < (count($configPresets) - 1)) {
-                $size .= ', ';
-            }
 
             if (self::canUseWebpSource()) {
                 if ($glideUrl = self::getGlideUrl($asset, $preset, $fit ?? $data['fit'], 'webp')) {
-                    $presets['webp'] .= $glideUrl.' '.$size;
+                    $webpSource[] = $glideUrl.' '.$size;
 
                     if ($preset !== 'placeholder') {
                         $webpSourceFound = true;
@@ -91,7 +85,7 @@ class Responsive
 
             if (self::canUseMimeTypeSource()) {
                 if ($glideUrl = self::getGlideUrl($asset, $preset, $fit ?? $data['fit'], $asset->extension())) {
-                    $presets[$asset->mimeType()] .= $glideUrl.' '.$size;
+                    $mimeTypeSource[] = $glideUrl.' '.$size;
 
                     if ($preset !== 'placeholder') {
                         $mimeTypeSourceFound = true;
@@ -105,7 +99,14 @@ class Responsive
                 }
             }
 
-            $index++;
+        }
+
+        if (self::canUseWebpSource() && count($webpSource) > 0) {
+            $presets['webp'] = implode(', ', $webpSource);
+        }
+
+        if (self::canUseMimeTypeSource() && count($mimeTypeSource) > 0) {
+            $presets[$asset->mimeType()] = implode(', ', $mimeTypeSource);
         }
 
         if (! $webpSourceFound && ! $mimeTypeSourceFound) {
@@ -176,7 +177,8 @@ class Responsive
     {
         $presets = collect($config);
 
-        $vertical = $asset->height() > $asset->width();
+        [$width, $height] = self::getAssetDimensions($asset);
+        $vertical = $height && $width ? $height > $width : false;
         $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || (isset($preset['w'], $preset['h']) && (($preset['h'] > $preset['w']) === $vertical)));
 
         return $presets->isNotEmpty() ? $presets->toArray() : $config;
@@ -184,7 +186,7 @@ class Responsive
 
     protected static function getAttributeBag(array $arguments): string
     {
-        $excludedAttributes = ['src', 'class', 'alt', 'width', 'height', 'onload'];
+        $excludedAttributes = ['src', 'class', 'alt', 'width', 'height', 'onload', 'max_width', 'rendered_width'];
 
         return collect($arguments)
             ->filter(fn ($value, $key) => ! in_array($key, $excludedAttributes))
@@ -201,5 +203,59 @@ class Responsive
     protected static function canUseMimeTypeSource(): bool
     {
         return in_array(config('justbetter.glide-directive.sources'), ['mime_type', 'both']);
+    }
+
+    protected static function capPresetsByWidth(Asset $asset, array $presets, array $arguments = []): array
+    {
+        $maxWidth = self::getMaxSrcsetWidth($asset, $arguments);
+
+        return collect($presets)
+            ->filter(function ($preset, $key) use ($maxWidth) {
+                if ($key === 'placeholder') {
+                    return true;
+                }
+
+                if (! isset($preset['w'])) {
+                    return false;
+                }
+
+                return (int) $preset['w'] <= $maxWidth;
+            })
+            ->toArray();
+    }
+
+    protected static function getMaxSrcsetWidth(Asset $asset, array $arguments = []): ?int
+    {
+        [$width] = self::getAssetDimensions($asset);
+        $maxWidth = $width ?: null;
+
+        $renderedWidth = self::getRenderedWidth($arguments);
+        if ($renderedWidth) {
+            $renderedCap = $renderedWidth * 2;
+            $maxWidth = $maxWidth ? min($maxWidth, $renderedCap) : $renderedCap;
+        }
+
+        return $maxWidth;
+    }
+
+    protected static function getRenderedWidth(array $arguments): ?int
+    {
+        $renderedWidth = $arguments['max_width'] ?? $arguments['rendered_width'] ?? null;
+
+        if ($renderedWidth === null) {
+            return null;
+        }
+
+        $renderedWidth = (int) $renderedWidth;
+
+        return $renderedWidth > 0 ? $renderedWidth : null;
+    }
+
+    protected static function getAssetDimensions(Asset $asset): array
+    {
+        $width = $asset->width();
+        $height = $asset->height();
+
+        return [$width, $height];
     }
 }

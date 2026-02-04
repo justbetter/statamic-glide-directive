@@ -151,6 +151,50 @@ class ResponsiveTest extends TestCase
     }
 
     #[Test]
+    public function it_caps_srcset_widths_to_asset_width(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+        $assetWidth = $asset->width();
+
+        config()->set('statamic.assets.image_manipulation.presets', [
+            'placeholder' => ['w' => 32, 'h' => 32, 'q' => 100, 'fit' => 'contain'],
+            'xs' => ['w' => 320, 'h' => 320, 'q' => 80, 'fit' => 'contain'],
+            'sm' => ['w' => $assetWidth + 100, 'h' => $assetWidth + 100, 'q' => 80, 'fit' => 'contain'],
+        ]);
+
+        $presets = Responsive::getPresets($asset);
+        $widths = $this->extractSrcsetWidths($presets['webp'] ?? '');
+
+        $this->assertNotEmpty($widths);
+        // @phpstan-ignore-next-line
+        $this->assertLessThanOrEqual($assetWidth, max($widths));
+
+        $asset->delete();
+    }
+
+    #[Test]
+    public function it_caps_srcset_widths_to_rendered_width(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        config()->set('statamic.assets.image_manipulation.presets', [
+            'placeholder' => ['w' => 32, 'h' => 32, 'q' => 100, 'fit' => 'contain'],
+            'xs' => ['w' => 320, 'h' => 320, 'q' => 80, 'fit' => 'contain'],
+            'sm' => ['w' => 640, 'h' => 640, 'q' => 80, 'fit' => 'contain'],
+            'md' => ['w' => 960, 'h' => 960, 'q' => 80, 'fit' => 'contain'],
+        ]);
+
+        $presets = Responsive::getPresets($asset, ['max_width' => 300]);
+        $widths = $this->extractSrcsetWidths($presets['webp'] ?? '');
+
+        $this->assertNotEmpty($widths);
+        // @phpstan-ignore-next-line
+        $this->assertLessThanOrEqual(600, max($widths));
+
+        $asset->delete();
+    }
+
+    #[Test]
     public function it_uses_asset_url_when_no_sources_found(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
@@ -218,5 +262,13 @@ class ResponsiveTest extends TestCase
         $this->assertNotNull($result);
 
         $asset->delete();
+    }
+
+    protected function extractSrcsetWidths(string $srcset): array
+    {
+        preg_match_all('/\s(\d+)w/', $srcset, $matches);
+
+        // @phpstan-ignore-next-line
+        return array_map('intval', $matches[1] ?? []);
     }
 }
