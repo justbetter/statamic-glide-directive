@@ -11,10 +11,8 @@ class ServiceProviderTest extends TestCase
     public function it_registers_blade_directive(): void
     {
         $compiler = app('blade.compiler');
-
-        // Test if the directive is registered
-        $this->assertTrue(method_exists($compiler, 'getCustomDirectives'));
-        $this->assertArrayHasKey('responsive', $compiler->getCustomDirectives());
+        $directives = $compiler->getCustomDirectives();
+        $this->assertArrayHasKey('responsive', $directives);
     }
 
     #[Test]
@@ -31,5 +29,18 @@ class ServiceProviderTest extends TestCase
     {
         $this->assertInstanceOf(Responsive::class, app(Responsive::class));
         $this->assertSame(app(Responsive::class), app(Responsive::class));
+    }
+
+    #[Test]
+    public function it_compiles_responsive_directive(): void
+    {
+        $this->uploadTestAsset('upload.png');
+
+        $compiler = app('blade.compiler');
+        $template = '@responsive($asset)';
+        $compiled = $compiler->compileString($template);
+
+        $this->assertStringContainsString('Responsive::handle', $compiled);
+        $this->assertStringContainsString('$asset', $compiled);
     }
 }
