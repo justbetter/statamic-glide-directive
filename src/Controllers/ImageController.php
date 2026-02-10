@@ -48,12 +48,11 @@ class ImageController extends Controller
             abort(404);
         }
 
-        // @phpstan-ignore-next-line
-        $contentType = $this->asset->mimeType();
+        $contentType = $this->getContentType();
 
         return new BinaryFileResponse($publicPath, 200, [
             'Content-Type' => $contentType,
-            'Cache-Control' => 'public, max-age=31536000',
+            'Cache-Control' => 'public, max-age=31536000, immutable',
         ]);
     }
 
@@ -63,11 +62,13 @@ class ImageController extends Controller
             return null;
         }
 
+        $this->applyWebpDefaults();
+
         $this->server->setSource(Storage::build(['driver' => 'local', 'root' => public_path()])->getDriver());
         $this->server->setSourcePathPrefix('/');
         $this->server->setCachePathPrefix(config('justbetter.glide-directive.storage_prefix', 'glide-image').'/'.$this->params['p'].'/'.$this->params['fit'].'/'.$this->params['s']);
         $this->server->setCachePathCallable($this->getCachePathCallable());
-
+        // @phpstan-ignore-next-line
         $path = $this->server->makeImage($this->asset->url(), $this->params);
 
         return $path;
@@ -85,6 +86,34 @@ class ImageController extends Controller
 
         return function () use ($server, $asset, $params) {
             return $server->getCachePathPrefix().$asset->url().$params['format'];
+        };
+    }
+
+    protected function applyWebpDefaults(): void
+    {
+        if (($this->params['format'] ?? null) !== '.webp') {
+            return;
+        }
+
+        $presetConfig = config('statamic.assets.image_manipulation.presets')[$this->params['p']] ?? [];
+        if (array_key_exists('lossless', $presetConfig)) {
+            return;
+        }
+
+        $this->params['lossless'] = 0;
+    }
+
+    protected function getContentType(): string
+    {
+        $format = $this->params['format'] ?? '';
+
+        return match ($format) {
+            '.webp' => 'image/webp',
+            '.jpg', '.jpeg' => 'image/jpeg',
+            '.png' => 'image/png',
+            '.gif' => 'image/gif',
+            // @phpstan-ignore-next-line
+            default => $this->asset ? $this->asset->mimeType() : 'application/octet-stream',
         };
     }
 }
