@@ -145,7 +145,7 @@ class Responsive
         );
     }
 
-    protected static function getGlideUrl(Asset $asset, string $preset, string $fit, ?string $format = null): ?string
+    public static function getGlideUrl(Asset $asset, string $preset, string $fit, ?string $format = null): ?string
     {
         if ($preset === 'placeholder') {
             return Statamic::tag('glide:data_url')->params([
