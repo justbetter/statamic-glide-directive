@@ -19,6 +19,7 @@ abstract class TestCase extends AddonTestCase
     {
         parent::resolveApplicationConfiguration($app);
 
+        $app['config']->set('app.key', 'base64:statamic-glide-directive-test-key');
         $app['config']->set('statamic.assets.image_manipulation.driver', 'gd');
         $app['config']->set('statamic.assets.image_manipulation.cache', true);
         $app['config']->set('statamic.assets.image_manipulation.cache_path', __DIR__.'/Assets/img');

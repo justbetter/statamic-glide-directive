@@ -3,8 +3,8 @@
     "description": "Addon that adds a glide blade directive",
     "type": "package",
     "require": {
-        "php": "^8.3",
-        "statamic/cms": "^5.0"
+        "php": "^8.4",
+        "statamic/cms": "^6.0"
     },
     "require-dev": {
         "larastan/larastan": "^3.4",
