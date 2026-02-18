@@ -1,6 +1,15 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.1.0...3.1.0)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.2.0...3.2.0)
+## [3.2.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.2.0) - 2026-02-13
+
+### Added
+- Use right width for sizes (#25) 
+- Minor performance improvements (#26)
+- Open up getGlideUrl function (#28)
+
+**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/3.1.0...3.2.0
+
 ## [3.1.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.1.0) - 2026-01-13
 
 ### Added
