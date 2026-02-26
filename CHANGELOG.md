@@ -1,6 +1,13 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.2.0...3.2.0)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/4.0.0...4.0.0)
+## [4.0.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/4.0.0) - 2026-02-26
+
+### Added
+- Statamic 6 & PHP 8.5 Compatibility (#27)
+
+**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/3.2.0...4.0.0
+
 ## [3.2.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.2.0) - 2026-02-13
 
 ### Added
