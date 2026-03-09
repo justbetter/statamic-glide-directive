@@ -6,38 +6,25 @@ return [
     'placeholder' => true,
 
     // The default preset used in the img src.
-    'default_preset' => 'sm',
+    'default_preset' => 'md',
 
-    // The default presets used for generating the resizes.
-    // If the config in statamic.assets.image_manipulation.presets is empty this will be used instead.
-    'presets' => [
-        'placeholder' => ['w' => 32, 'h' => 32, 'q' => 100, 'fit' => 'contain'],
-        'xs' => ['w' => 320, 'h' => 320, 'q' => 70, 'fit' => 'contain', 'lossless' => false],
-        'sm' => ['w' => 480, 'h' => 480, 'q' => 75, 'fit' => 'contain', 'lossless' => false],
-        'md' => ['w' => 768, 'h' => 768, 'q' => 80, 'fit' => 'contain', 'lossless' => false],
-        'lg' => ['w' => 1280, 'h' => 1280, 'q' => 82, 'fit' => 'contain', 'lossless' => false],
-        'xl' => ['w' => 1440, 'h' => 1440, 'q' => 82, 'fit' => 'contain', 'lossless' => false],
-        '2xl' => ['w' => 1680, 'h' => 1680, 'q' => 82, 'fit' => 'contain', 'lossless' => false],
+    // The default widths used for generating the resizes.
+    'default_widths' => [320, 480, 640, 768, 1024, 1280, 1440, 1536, 1680],
 
-        'xs-h' => ['w' => 160, 'h' => 320, 'q' => 70, 'fit' => 'contain', 'lossless' => false],
-        'sm-h' => ['w' => 320, 'h' => 480, 'q' => 75, 'fit' => 'contain', 'lossless' => false],
-        'md-h' => ['w' => 480, 'h' => 768, 'q' => 80, 'fit' => 'contain', 'lossless' => false],
-        'lg-h' => ['w' => 768, 'h' => 1280, 'q' => 82, 'fit' => 'contain', 'lossless' => false],
-        'xl-h' => ['w' => 1280, 'h' => 1440, 'q' => 82, 'fit' => 'contain', 'lossless' => false],
-        '2xl-h' => ['w' => 1440, 'h' => 1680, 'q' => 82, 'fit' => 'contain', 'lossless' => false],
+    // The default formats that are used for generating the resizes.
+    'default_formats' => [
+        'avif' => 'image/avif',
+        'webp' => 'image/webp',
+        'jpg' => 'image/jpeg',
     ],
 
-    // Configure which sources you would like to use.
-    // Set 'webp' for WebP only.
-    // Set 'mime_type' for the original image mime type.
-    // Set 'both' to use both sources.
-    'sources' => 'webp',
-
-    // Set the default queue to use for generating the images.
-    'default_queue' => env('STATAMIC_GLIDE_DIRECTIVE_DEFAULT_QUEUE', 'default'),
-
-    // Set the threshold width to use for the image source sets.
-    'image_resize_threshold' => 480,
+    'sizes' => [
+        'xs' => '(min-width: 768px) 320px, (min-width: 640px) 80vw, 90vw',
+        'sm' => '(min-width: 768px) 480px, (min-width: 640px) 85vw, 90vw',
+        'md' => '(min-width: 1280px) 640px, (min-width: 768px) 50vw, 90vw',
+        'lg' => '(min-width: 1280px) 960px, (min-width: 768px) 75vw, 90vw',
+        'xl' => '(min-width: 1280px) 1150px, 90vw',
+    ],
 
     // Set the cache prefix to use for the image source sets.
     'cache_prefix' => 'img',

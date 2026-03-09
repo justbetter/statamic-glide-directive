@@ -9,7 +9,6 @@ use Statamic\Assets\Asset;
 use Statamic\Contracts\Imaging\ImageManipulator;
 use Statamic\Facades\Image;
 use Statamic\Fields\Value;
-use Statamic\Statamic;
 
 class Responsive
 {
@@ -23,141 +22,98 @@ class Responsive
             return '';
         }
 
+        $size = $arguments['size'] ?? config('justbetter.glide-directive.default_preset');
+        $focus = $asset->get('focus');
+        $cover = isset($arguments['cover']);
+        $contain = isset($arguments['contain']);
+
+        $classAttr = match (true) {
+            $cover => 'object-cover w-full h-full object-[var(--focal-point)]'.(isset($arguments['class']) ? ' '.e($arguments['class']) : ''),
+            $contain => 'object-contain w-full h-full object-[var(--focal-point)]'.(isset($arguments['class']) ? ' '.e($arguments['class']) : ''),
+            default => e($arguments['class'] ?? ''),
+        };
+
+        if (($cover || $contain) && is_string($focus)) {
+            $styleAttr = sprintf(' style="object-position: %s"', self::focusToPosition($focus));
+        }
+
         /** @var view-string $view */
         $view = 'statamic-glide-directive::image';
 
         return view($view, [
             'image' => $asset,
-            'default_preset' => self::getDefaultPreset($asset),
-            'presets' => self::getPresets($asset, $arguments),
+            'srcsets' => self::buildSrcsets($asset, $arguments['ratio'] ?? null),
             'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
             'alt' => $arguments['alt'] ?? ($asset->get('alt') ?? ''),
             'width' => $arguments['width'] ?? $asset->width(),
             'height' => $arguments['height'] ?? $asset->height(),
+            'classAttr' => $classAttr,
+            'styleAttr' => $styleAttr ?? '',
+            'size' => $size,
+
         ]);
     }
 
-    public static function getPresets(Asset $asset, array $arguments = []): array
+    protected static function focusToPosition(string $focus): string
     {
-        if ($asset->width() <= config('justbetter.glide-directive.image_resize_threshold')) {
-            return [];
+        if (! str_contains($focus, '-')) {
+            return $focus;
         }
 
-        $config = config('statamic.assets.image_manipulation.presets');
-
-        if (! config('justbetter.glide-directive.placeholder') && isset($config['placeholder'])) {
-            unset($config['placeholder']);
-        }
-
-        $presets = [];
-
-        if (self::canUseWebpSource()) {
-            $presets['webp'] = '';
-        }
-
-        if (self::canUseMimeTypeSource()) {
-            $presets[$asset->mimeType()] = '';
-        }
-
-        $configPresets = self::getPresetsByRatio($asset, $config);
-        $configPresets = self::capPresetsByWidth($asset, $configPresets, $arguments);
-        $assetMeta = $asset->meta();
-        $fit = isset($assetMeta['data']['focus']) ? sprintf('crop-%s', $assetMeta['data']['focus']) : null;
-
-        $webpSourceFound = false;
-        $mimeTypeSourceFound = false;
-        $webpSource = [];
-        $mimeTypeSource = [];
-
-        foreach ($configPresets as $preset => $data) {
-            $size = $data['w'].'w';
-
-            if (self::canUseWebpSource()) {
-                if ($glideUrl = self::getGlideUrl($asset, $preset, $fit ?? $data['fit'], 'webp')) {
-                    $webpSource[] = $glideUrl.' '.$size;
-
-                    if ($preset !== 'placeholder') {
-                        $webpSourceFound = true;
-                    }
-                }
-            }
-
-            if (self::canUseMimeTypeSource()) {
-                if ($glideUrl = self::getGlideUrl($asset, $preset, $fit ?? $data['fit'], $asset->extension())) {
-                    $mimeTypeSource[] = $glideUrl.' '.$size;
-
-                    if ($preset !== 'placeholder') {
-                        $mimeTypeSourceFound = true;
-                    }
-                }
-            }
-
-            if ($preset === 'placeholder') {
-                if ($glideUrl = Statamic::tag('glide:data_url')->params(['preset' => 'placeholder', 'src' => $asset->url(), 'fit' => $fit ?? $data['fit']])->fetch()) {
-                    $presets['placeholder'] = $glideUrl;
-                }
-            }
-
-        }
-
-        if (self::canUseWebpSource() && count($webpSource) > 0) {
-            $presets['webp'] = implode(', ', $webpSource);
-        }
-
-        if (self::canUseMimeTypeSource() && count($mimeTypeSource) > 0) {
-            $presets[$asset->mimeType()] = implode(', ', $mimeTypeSource);
-        }
-
-        if (! $webpSourceFound && ! $mimeTypeSourceFound) {
-            $presets = ['placeholder' => $asset->url()];
-        }
-
-        if (! isset($presets['placeholder'])) {
-            $presets['placeholder'] = Statamic::tag('glide:data_url')->params([
-                'preset' => collect($configPresets)->keys()->first(),
-                'src' => $asset->url(),
-                'fit' => 'crop_focal',
-            ])->fetch();
-        }
-
-        return array_filter($presets);
+        return vsprintf('%d%% %d%%', explode('-', $focus));
     }
 
-    protected static function getDefaultPreset(Asset $asset): ?string
+    protected static function buildSrcsets(Asset $asset, ?float $ratio): array
     {
-        $assetMeta = $asset->meta();
-        $fit = isset($assetMeta['data']['focus']) ? sprintf('crop-%s', $assetMeta['data']['focus']) : null;
+        $originalRatio = $asset->height() && $asset->width()
+            ? $asset->height() / $asset->width()
+            : null;
 
-        $config = config('statamic.assets.image_manipulation.presets');
-        $configPresets = self::getPresetsByRatio($asset, $config);
-        $defaultPreset = $configPresets[config('justbetter.glide-directive.default_preset')] ?? false;
+        $useRatio = $ratio ?? $originalRatio;
 
-        if (! $defaultPreset) {
-            return $asset->url();
+        $formats = config('justbetter.glide-directive.default_formats');
+        $srcsetParts = [];
+        foreach ($formats as $format => $mimeType) {
+            $srcsetParts[$format] = [];
+
+            foreach (self::getWidths() as $width) {
+                $height = $useRatio ? (int) round($width * $useRatio) : null;
+
+                $srcset = [
+                    'width' => $width,
+                    'height' => $height,
+                    'ratio' => $useRatio,
+                ];
+
+                $url = self::getGlideUrl($asset, $width, $height, $format);
+                $srcsetParts[$format][] = "{$url} {$srcset['width']}w";
+            }
         }
 
-        return self::getGlideUrl(
-            $asset,
-            config('justbetter.glide-directive.default_preset', 'sm'),
-            $fit ?? ($defaultPreset['fit'] ?? 'contain'),
-            self::canUseWebpSource() ? 'webp' : $asset->mimeType()
-        );
+        return $srcsetParts;
     }
 
-    public static function getGlideUrl(Asset $asset, string $preset, string $fit, ?string $format = null): ?string
+    protected static function getWidths(): array
     {
-        if ($preset === 'placeholder') {
-            return Statamic::tag('glide:data_url')->params([
-                'preset' => $preset,
-                'src' => $asset->url(),
-                'format' => $format,
-                'fit' => $fit,
-            ])->fetch();
-        }
+        return config('justbetter.glide-directive.default_widths', [
+            320,
+            480,
+            640,
+            768,
+            1024,
+            1280,
+            1440,
+            1536,
+            1680,
+        ]);
+    }
 
+    public static function getGlideUrl(Asset $asset, int $width, ?int $height, string $format): ?string
+    {
         $signatureFactory = SignatureFactory::create(config('app.key'));
-        $params = $signatureFactory->addSignature($asset->url(), ['p' => $preset, 'fit' => $fit, 'format' => '.'.$format]);
+
+        $params = $signatureFactory->addSignature($asset->url(), ['width' => $width, 'height' => $height, 'format' => '.'.$format]);
 
         return route('glide-image.preset', array_merge($params, [
             'file' => ltrim($asset->url(), '/'),

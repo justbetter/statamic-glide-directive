@@ -2,32 +2,44 @@
 
 namespace JustBetter\GlideDirective\Controllers;
 
-use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use League\Glide\Server;
 use League\Glide\Signatures\Signature;
 use League\Glide\Signatures\SignatureException;
 use Statamic\Assets\Asset;
 use Statamic\Contracts\Assets\Asset as AssetContract;
 use Statamic\Facades\Asset as AssetFacade;
-use Statamic\Imaging\ImageGenerator;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ImageController extends Controller
 {
-    protected null|Asset|AssetContract $asset;
+    protected Asset|AssetContract $asset;
 
     protected array $params;
 
-    public function __construct(protected ImageGenerator $imageGenerator, protected Server $server) {}
+    public function __construct(protected Server $server) {}
 
-    public function getImageByPreset(Request $request, string $preset, string $fit, string $signature, string $file, string $format): BinaryFileResponse
-    {
-        $this->asset = AssetFacade::findByUrl(Str::start($file, '/'));
-        $this->params = ['s' => $signature, 'p' => $preset, 'fit' => $fit, 'format' => $format];
+    public function getImageByPreset(
+        Request $request,
+        int $width,
+        int $height,
+        string $signature,
+        string $file,
+        string $format
+    ): BinaryFileResponse {
+        $file = ltrim($file, '/');
+        $format = ltrim($format, '.');
+
+        $this->asset = AssetFacade::findByUrl('/'.$file);
+
+        $this->params = [
+            's' => $signature,
+            'width' => $width,
+            'height' => $height,
+            'format' => $format,
+        ];
 
         if (! $this->asset) {
             abort(404);
@@ -35,23 +47,31 @@ class ImageController extends Controller
 
         try {
             $signatureFactory = new Signature(config('app.key'));
-            $signatureFactory->validateRequest($this->asset->url(), $this->params);
+
+            $signatureFactory->validateRequest($this->asset->url(), [
+                's' => $signature,
+                'width' => $width,
+                'height' => $height,
+                'format' => '.'.$format,
+            ]);
         } catch (SignatureException $e) {
             abort(404);
         }
 
-        $path = $this->buildImage();
-        $cachePath = config('statamic.assets.image_manipulation.cache_path');
-        $publicPath = $cachePath.'/'.$path;
+        $relativePath = $this->getPublicRelativePath();
+        $publicPath = public_path($relativePath);
 
         if (! file_exists($publicPath)) {
-            abort(404);
+            $generatedPath = $this->buildImage();
+            if (! $generatedPath || ! file_exists(public_path($generatedPath))) {
+                abort(404);
+            }
+
+            $publicPath = public_path($generatedPath);
         }
 
-        $contentType = $this->getContentType();
-
         return new BinaryFileResponse($publicPath, 200, [
-            'Content-Type' => $contentType,
+            'Content-Type' => $this->getContentType(),
             'Cache-Control' => 'public, max-age=31536000, immutable',
         ]);
     }
@@ -62,58 +82,81 @@ class ImageController extends Controller
             return null;
         }
 
-        $this->applyWebpDefaults();
+        $params = [
+            'w' => $this->params['width'],
+            'fm' => $this->params['format'],
+            'q' => 85,
+        ];
 
-        $this->server->setSource(Storage::build(['driver' => 'local', 'root' => public_path()])->getDriver());
+        if (! empty($this->params['height'])) {
+            $params['h'] = $this->params['height'];
+            $params['fit'] = 'crop-focal';
+        }
+
+        $source = Storage::build([
+            'driver' => 'local',
+            'root' => public_path(),
+        ]);
+
+        $cacheRoot = $this->getPublicCacheRoot();
+
+        $cache = Storage::build([
+            'driver' => 'local',
+            'root' => public_path($cacheRoot),
+        ]);
+
+        $this->server->setSource($source->getDriver());
         $this->server->setSourcePathPrefix('/');
-        $this->server->setCachePathPrefix(config('justbetter.glide-directive.storage_prefix', 'glide-image').'/'.$this->params['p'].'/'.$this->params['fit'].'/'.$this->params['s']);
-        $this->server->setCachePathCallable($this->getCachePathCallable());
-        // @phpstan-ignore-next-line
-        $path = $this->server->makeImage($this->asset->url(), $this->params);
 
-        return $path;
+        $this->server->setCache($cache->getDriver());
+        $this->server->setCachePathPrefix('');
+
+        $expectedRelativePath = $this->getCachePathInsideCacheRoot();
+
+        $this->server->setCachePathCallable(
+            fn (string $path, array $params) => $expectedRelativePath
+        );
+
+        $generated = $this->server->makeImage($this->asset->url(), $params);
+
+        return $cacheRoot.'/'.ltrim($generated, '/');
     }
 
-    protected function getCachePathCallable(): ?Closure
+    protected function getPublicCacheRoot(): string
     {
-        $server = $this->server;
-        $asset = $this->asset;
-        $params = $this->params;
-
-        if (! $asset) {
-            return null;
-        }
-
-        return function () use ($server, $asset, $params) {
-            return $server->getCachePathPrefix().$asset->url().$params['format'];
-        };
+        return trim(config('justbetter.glide-directive.cache_prefix'), '/').'/'
+            .trim(config('justbetter.glide-directive.storage_prefix'), '/');
     }
 
-    protected function applyWebpDefaults(): void
+    protected function getCachePathInsideCacheRoot(): string
     {
-        if (($this->params['format'] ?? null) !== '.webp') {
-            return;
-        }
+        $width = (int) $this->params['width'];
+        $height = (int) $this->params['height'];
+        $signature = trim($this->params['s'], '/');
+        $format = ltrim($this->params['format'], '.');
 
-        $presetConfig = config('statamic.assets.image_manipulation.presets')[$this->params['p']] ?? [];
-        if (array_key_exists('lossless', $presetConfig)) {
-            return;
-        }
+        $assetUrl = ltrim($this->asset->url(), '/');
 
-        $this->params['lossless'] = 0;
+        return $width.'/'
+            .$height.'/'
+            .$signature.'/'
+            .$assetUrl.'.'.$format;
+    }
+
+    protected function getPublicRelativePath(): string
+    {
+        return $this->getPublicCacheRoot().'/'.$this->getCachePathInsideCacheRoot();
     }
 
     protected function getContentType(): string
     {
-        $format = $this->params['format'] ?? '';
-
-        return match ($format) {
-            '.webp' => 'image/webp',
-            '.jpg', '.jpeg' => 'image/jpeg',
-            '.png' => 'image/png',
-            '.gif' => 'image/gif',
-            // @phpstan-ignore-next-line
-            default => $this->asset ? $this->asset->mimeType() : 'application/octet-stream',
+        return match (strtolower($this->params['format'])) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'avif' => 'image/avif',
+            default => 'application/octet-stream',
         };
     }
 }
