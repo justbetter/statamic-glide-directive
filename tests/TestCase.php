@@ -56,9 +56,9 @@ abstract class TestCase extends AddonTestCase
     {
         UploadedFile::fake();
 
-        /* @phpstan-ignore-next-line */
         $assetContainer = (new AssetContainer)
             ->handle('test_container')
+            /* @phpstan-ignore-next-line */
             ->disk('assets')
             ->save();
 
