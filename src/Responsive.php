@@ -6,8 +6,6 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use League\Glide\Signatures\SignatureFactory;
 use Statamic\Assets\Asset;
-use Statamic\Contracts\Imaging\ImageManipulator;
-use Statamic\Facades\Image;
 use Statamic\Fields\Value;
 
 class Responsive
@@ -120,26 +118,6 @@ class Responsive
         ]));
     }
 
-    protected static function getManipulator(Asset $item, string $preset, string $fit, ?string $format = null): ImageManipulator|string
-    {
-        $manipulator = Image::manipulate($item);
-
-        collect(['p' => $preset, 'fm' => $format, 'fit' => $fit])->each(fn ($value, $param) => $manipulator->$param($value));
-
-        return $manipulator;
-    }
-
-    protected static function getPresetsByRatio(Asset $asset, array $config): array
-    {
-        $presets = collect($config);
-
-        [$width, $height] = self::getAssetDimensions($asset);
-        $vertical = $height && $width ? $height > $width : false;
-        $presets = $presets->filter(fn ($preset, $key) => $key === 'placeholder' || (isset($preset['w'], $preset['h']) && (($preset['h'] > $preset['w']) === $vertical)));
-
-        return $presets->isNotEmpty() ? $presets->toArray() : $config;
-    }
-
     protected static function getAttributeBag(array $arguments): string
     {
         $excludedAttributes = ['src', 'class', 'alt', 'width', 'height', 'onload', 'max_width', 'rendered_width'];
@@ -149,69 +127,5 @@ class Responsive
             ->map(function ($value, $key) {
                 return $key.'="'.$value.'"';
             })->implode(' ');
-    }
-
-    protected static function canUseWebpSource(): bool
-    {
-        return in_array(config('justbetter.glide-directive.sources'), ['webp', 'both']);
-    }
-
-    protected static function canUseMimeTypeSource(): bool
-    {
-        return in_array(config('justbetter.glide-directive.sources'), ['mime_type', 'both']);
-    }
-
-    protected static function capPresetsByWidth(Asset $asset, array $presets, array $arguments = []): array
-    {
-        $maxWidth = self::getMaxSrcsetWidth($asset, $arguments);
-
-        return collect($presets)
-            ->filter(function ($preset, $key) use ($maxWidth) {
-                if ($key === 'placeholder') {
-                    return true;
-                }
-
-                if (! isset($preset['w'])) {
-                    return false;
-                }
-
-                return (int) $preset['w'] <= $maxWidth;
-            })
-            ->toArray();
-    }
-
-    protected static function getMaxSrcsetWidth(Asset $asset, array $arguments = []): ?int
-    {
-        [$width] = self::getAssetDimensions($asset);
-        $maxWidth = $width ?: null;
-
-        $renderedWidth = self::getRenderedWidth($arguments);
-        if ($renderedWidth) {
-            $renderedCap = $renderedWidth * 2;
-            $maxWidth = $maxWidth ? min($maxWidth, $renderedCap) : $renderedCap;
-        }
-
-        return $maxWidth;
-    }
-
-    protected static function getRenderedWidth(array $arguments): ?int
-    {
-        $renderedWidth = $arguments['max_width'] ?? $arguments['rendered_width'] ?? null;
-
-        if ($renderedWidth === null) {
-            return null;
-        }
-
-        $renderedWidth = (int) $renderedWidth;
-
-        return $renderedWidth > 0 ? $renderedWidth : null;
-    }
-
-    protected static function getAssetDimensions(Asset $asset): array
-    {
-        $width = $asset->width();
-        $height = $asset->height();
-
-        return [$width, $height];
     }
 }

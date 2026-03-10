@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ImageController extends Controller
 {
-    protected Asset|AssetContract $asset;
+    protected null|Asset|AssetContract $asset;
 
     protected array $params;
 
@@ -31,7 +31,7 @@ class ImageController extends Controller
     ): BinaryFileResponse {
         $file = ltrim($file, '/');
         $format = ltrim($format, '.');
-
+        
         $this->asset = AssetFacade::findByUrl('/'.$file);
 
         $this->params = [
@@ -116,7 +116,7 @@ class ImageController extends Controller
         $this->server->setCachePathCallable(
             fn (string $path, array $params) => $expectedRelativePath
         );
-
+        
         $generated = $this->server->makeImage($this->asset->url(), $params);
 
         return $cacheRoot.'/'.ltrim($generated, '/');
@@ -135,7 +135,7 @@ class ImageController extends Controller
         $signature = trim($this->params['s'], '/');
         $format = ltrim($this->params['format'], '.');
 
-        $assetUrl = ltrim($this->asset->url(), '/');
+        $assetUrl = ltrim($this->asset?->url() ?? '', '/');
 
         return $width.'/'
             .$height.'/'

@@ -1,10 +1,6 @@
 <?php
 
 return [
-    // Make use of the placeholder image which is generated from a glide data url.
-    // This will add a blurry image as a placeholder before loading the correct size.
-    'placeholder' => true,
-
     // The default preset used in the img src.
     'default_preset' => 'md',
 
