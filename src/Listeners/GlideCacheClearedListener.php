@@ -8,7 +8,7 @@ use Statamic\Facades\Glide;
 
 class GlideCacheClearedListener
 {
-    public function handle(GlideCacheCleared $event)
+    public function handle(GlideCacheCleared $event): void
     {
         /** @var Repository $repository */
         $repository = Glide::cacheStore();
