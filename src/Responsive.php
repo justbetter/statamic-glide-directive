@@ -24,14 +24,15 @@ class Responsive
         $focus = $asset->get('focus');
         $cover = isset($arguments['cover']);
         $contain = isset($arguments['contain']);
-
+        
         $classAttr = match (true) {
             $cover => 'object-cover w-full h-full object-[var(--focal-point)]'.(isset($arguments['class']) ? ' '.e($arguments['class']) : ''),
             $contain => 'object-contain w-full h-full object-[var(--focal-point)]'.(isset($arguments['class']) ? ' '.e($arguments['class']) : ''),
             default => e($arguments['class'] ?? ''),
         };
+        
 
-        if (($cover || $contain) && is_string($focus)) {
+        if (($cover || $contain) || is_string($focus)) {
             $styleAttr = sprintf(' style="object-position: %s"', self::focusToPosition($focus));
         }
 
@@ -49,7 +50,6 @@ class Responsive
             'classAttr' => $classAttr,
             'styleAttr' => $styleAttr ?? '',
             'size' => $size,
-
         ]);
     }
 
@@ -77,7 +77,7 @@ class Responsive
 
             foreach (self::getWidths() as $width) {
                 $height = $useRatio ? (int) round($width * $useRatio) : null;
-
+                
                 $srcset = [
                     'width' => $width,
                     'height' => $height,

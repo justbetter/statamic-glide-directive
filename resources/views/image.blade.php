@@ -24,8 +24,8 @@
             width="{{ $width }}"
             height="{{ $height }}"
             loading="lazy"
-            class="{{ $class ?? '' }}"
-            {!! $style ?? '' !!}
+            class="{{ $classAttr ?? '' }}"
+            {!! $styleAttr ?? '' !!}
         />
     @endif
 </picture>
