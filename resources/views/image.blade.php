@@ -1,53 +1,31 @@
-@if($image)
-    @if($image->width() > config('justbetter.glide-directive.image_resize_threshold'))
-        <picture>
-            @if( $image->extension() == 'svg' || $image->extension() == 'gif')
-                <img
-                    class="{{ $class }}"
-                    src="{{ $image->url() }}"
-                    alt="{{ $alt }}"
-                    width="{{ $width }}"
-                    height="{{ $height }}"
-                />
-            @else
-                @if(isset($presets['webp']))
-                    <source
-                        srcset="{{ $presets['webp'] }}"
-                        sizes="32px"
-                        type="image/webp"
-                    >
-                @endif
-                @if(isset($presets[$image->mimeType()]) && $image->mimeType() !== 'image/webp')
-                    <source
-                        srcset="{{ $presets[$image->mimeType()] }}"
-                        sizes="32px"
-                        type="{{ $image->mimeType() }}"
-                    >
-                @endif
-                <img
-                        {!! $attributes ?? '' !!}
-                        class="{{ $class }}"
-                        src="{{ $default_preset ?? $image->url() }}"
-                        alt="{{ $alt }}"
-                        width="{{ $width }}"
-                        height="{{ $height }}"
-                        loading="lazy"
-                        onload="
-                            this.onload = null;
-                            window.responsiveResizeObserver.observe(this);
-                        "
-                >
-            @endif
-        </picture>
-    @else
+<picture>
+    @if( $image->extension() == 'svg' || $image->extension() == 'gif')
         <img
-            {!! $attributes ?? '' !!}
             class="{{ $class }}"
             src="{{ $image->url() }}"
             alt="{{ $alt }}"
             width="{{ $width }}"
             height="{{ $height }}"
+        />
+    @else
+
+        @foreach($srcsets as $type=>$srcset)
+            <source
+                type="image/{{ $type }}"
+                srcset="{{ implode(', ', $srcset) }}"
+                sizes="{{ config('justbetter.glide-directive.sizes')[$size] }}"
+            >
+        @endforeach
+
+        <img 
+            {!! $attributes ?? '' !!}
+            src="{{ $image->url() }}"  
+            alt="{{ $alt }}"
+            width="{{ $width }}"
+            height="{{ $height }}"
             loading="lazy"
-        >
+            class="{{ $classAttr ?? '' }}"
+            {!! $styleAttr ?? '' !!}
+        />
     @endif
-@endif
+</picture>
