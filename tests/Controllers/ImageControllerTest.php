@@ -2,6 +2,7 @@
 
 namespace JustBetter\GlideDirective\Controllers\Tests;
 
+use Illuminate\Http\Request;
 use JustBetter\GlideDirective\Controllers\ImageController;
 use JustBetter\GlideDirective\Tests\TestCase;
 use League\Glide\Server;
@@ -126,7 +127,6 @@ class ImageControllerTest extends TestCase
             $this->assertStringContainsString('max-age=31536000', $cacheControl);
             $this->assertStringContainsString('immutable', $cacheControl);
             $this->assertEquals('image/webp', $response->headers->get('Content-Type'));
-
         } finally {
             if (file_exists($expectedImagePath)) {
                 unlink($expectedImagePath);
@@ -236,5 +236,110 @@ class ImageControllerTest extends TestCase
         $result = $method->invoke($controller);
 
         $this->assertNull($result);
+    }
+
+    #[Test]
+    public function it_returns_the_correct_content_type_for_supported_formats(): void
+    {
+        $controller = new ImageController(app(Server::class));
+
+        $reflection = new ReflectionClass($controller);
+
+        $paramsProperty = $reflection->getProperty('params');
+        $paramsProperty->setAccessible(true);
+
+        $method = $reflection->getMethod('getContentType');
+        $method->setAccessible(true);
+
+        $formats = [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'avif' => 'image/avif',
+        ];
+
+        foreach ($formats as $format => $expectedContentType) {
+            $paramsProperty->setValue($controller, ['format' => $format]);
+
+            $result = $method->invoke($controller);
+
+            $this->assertSame(
+                $expectedContentType,
+                $result,
+                "Failed asserting content type for format [{$format}]"
+            );
+        }
+    }
+
+    #[Test]
+    public function it_uses_generated_path_when_build_image_returns_an_existing_file(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $signatureFactory = new Signature(config('app.key'));
+        $params = [
+            's' => '',
+            'width' => 350,
+            'height' => 500,
+            'format' => '.jpg',
+        ];
+
+        $signature = $signatureFactory->generateSignature($asset->url(), $params);
+
+        $generatedPath = 'generated/test-image.jpg';
+        $generatedPublicPath = public_path($generatedPath);
+
+        $directory = dirname($generatedPublicPath);
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        file_put_contents($generatedPublicPath, 'fake-generated-image-content');
+
+        $controller = new class(app(Server::class), $generatedPath) extends ImageController
+        {
+            public function __construct(Server $server, protected string $fakeGeneratedPath)
+            {
+                parent::__construct($server);
+            }
+
+            protected function buildImage(): string
+            {
+                return $this->fakeGeneratedPath;
+            }
+        };
+
+        try {
+            $response = $controller->getImageByPreset(
+                Request::create('/'),
+                350,
+                500,
+                $signature,
+                ltrim($asset->url(), '/'),
+                '.jpg'
+            );
+
+            $this->assertInstanceOf(BinaryFileResponse::class, $response);
+            $this->assertSame(200, $response->getStatusCode());
+            $this->assertSame('image/jpeg', $response->headers->get('Content-Type'));
+            $this->assertSame($generatedPublicPath, $response->getFile()->getPathname());
+
+            /** @var string $cacheControl */
+            $cacheControl = $response->headers->get('Cache-Control');
+            $this->assertStringContainsString('public', $cacheControl);
+            $this->assertStringContainsString('max-age=31536000', $cacheControl);
+            $this->assertStringContainsString('immutable', $cacheControl);
+        } finally {
+            if (file_exists($generatedPublicPath)) {
+                unlink($generatedPublicPath);
+            }
+
+            $dir = dirname($generatedPublicPath);
+            while ($dir && $dir !== public_path() && is_dir($dir) && count(scandir($dir)) === 2) {
+                rmdir($dir);
+                $dir = dirname($dir);
+            }
+        }
     }
 }

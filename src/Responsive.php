@@ -52,7 +52,7 @@ class Responsive
         ]);
     }
 
-    protected static function focusToPosition(string $focus): string
+    public static function focusToPosition(string $focus): string
     {
         if (! str_contains($focus, '-')) {
             return $focus;
@@ -63,9 +63,7 @@ class Responsive
 
     protected static function buildSrcsets(Asset $asset, ?float $ratio): array
     {
-        $originalRatio = $asset->height() && $asset->width()
-            ? $asset->height() / $asset->width()
-            : null;
+        $originalRatio = $asset->height() / $asset->width();
 
         $useRatio = $ratio ?? $originalRatio;
 

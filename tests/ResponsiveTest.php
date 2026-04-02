@@ -95,6 +95,42 @@ class ResponsiveTest extends TestCase
         $asset->delete();
     }
 
+    #[Test]
+    public function it_can_focus_to_position(): void
+    {
+        $focuspoint = Responsive::focusToPosition('50-50');
+
+        $this->assertSame('50% 50%', $focuspoint);
+    }
+
+    #[Test]
+    public function it_returns_focus_to_position_when_not_provided(): void
+    {
+        $focuspoint = Responsive::focusToPosition('50 50');
+
+        $this->assertSame('50 50', $focuspoint);
+    }
+
+    #[Test]
+    public function it_renders_object_position_style_when_asset_has_focus(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $asset->set('focus', '25-75');
+        $asset->save();
+
+        $view = Responsive::handle($asset, [
+            'cover' => true,
+        ]);
+
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+
+        $this->assertStringContainsString('style="object-position: 25% 75%"', $rendered);
+
+        $asset->delete();
+    }
+
     protected function extractSrcsetWidths(string $srcset): array
     {
         preg_match_all('/\s(\d+)w/', $srcset, $matches);
