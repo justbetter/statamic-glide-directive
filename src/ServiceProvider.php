@@ -3,6 +3,9 @@
 namespace JustBetter\GlideDirective;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Event;
+use JustBetter\GlideDirective\Listeners\GlideCacheClearedListener;
+use Statamic\Events\GlideCacheCleared;
 use Statamic\Providers\AddonServiceProvider;
 
 class ServiceProvider extends AddonServiceProvider
@@ -14,7 +17,15 @@ class ServiceProvider extends AddonServiceProvider
             ->bootDirectives()
             ->bootViews()
             ->bootRoutes()
-            ->bootClasses();
+            ->bootClasses()
+            ->bootListeners();
+    }
+
+    protected function bootListeners(): static
+    {
+        Event::listen(GlideCacheCleared::class, GlideCacheClearedListener::class);
+
+        return $this;
     }
 
     protected function bootConfig(): static
