@@ -156,10 +156,10 @@ class ImageControllerTest extends TestCase
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
 
         $storagePrefix = config('justbetter.glide-directive.storage_prefix');
-        $imagePath = $storagePrefix.'/350/500/'.$signature.$asset->url().'.jpg';
+        $imagePath = $storagePrefix . '/350/500/' . $signature . $asset->url() . '.jpg';
 
         /** @var Server $server */
-        $server = $this->mock(Server::class, function (MockInterface $mock) use ($asset, $imagePath) {
+        $server = $this->mock(Server::class, function (MockInterface $mock) use ($asset, $imagePath, $signature) {
             $mock->shouldReceive('setSource')->andReturnSelf();
             $mock->shouldReceive('setSourcePathPrefix')->andReturnSelf();
             $mock->shouldReceive('setCache')->andReturnSelf();
@@ -167,13 +167,17 @@ class ImageControllerTest extends TestCase
             $mock->shouldReceive('setCachePathCallable')->andReturnSelf();
 
             $mock->shouldReceive('makeImage')
-                ->with($asset->url(), ['w' => 350, 'fm' => 'jpg', 'h' => 500, 'q' => 85, 'fit' => 'crop-focal'])
+                ->with($asset->url(), [
+                    'w' => 350,
+                    'h' => 500,
+                    'fm' => 'jpg',
+                    'q' => 85,
+                    's' => $signature,
+                ])
                 ->andReturn($imagePath);
         });
 
-        $controller = new ImageController(
-            $server
-        );
+        $controller = new ImageController($server);
 
         $this->expectException(NotFoundHttpException::class);
 
