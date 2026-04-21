@@ -31,7 +31,7 @@ class Responsive
             default => e($arguments['class'] ?? ''),
         };
 
-        if (($cover || $contain) || is_string($focus)) {
+        if (is_string($focus)) {
             $styleAttr = sprintf(' style="object-position: %s"', self::focusToPosition($focus));
         }
 
