@@ -19,9 +19,9 @@ class ServiceProviderTest extends TestCase
     public function it_registers_config(): void
     {
         $this->assertNotNull(config('justbetter.glide-directive'));
-        $this->assertIsArray(config('justbetter.glide-directive.presets'));
-        $this->assertIsString(config('justbetter.glide-directive.sources'));
-        $this->assertIsBool(config('justbetter.glide-directive.placeholder'));
+        $this->assertIsArray(config('justbetter.glide-directive.default_widths'));
+        $this->assertIsArray(config('justbetter.glide-directive.sizes'));
+        $this->assertIsArray(config('justbetter.glide-directive.default_formats'));
     }
 
     #[Test]
