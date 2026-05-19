@@ -20,16 +20,8 @@ class Responsive
             return '';
         }
 
-        $size = $arguments['size'] ?? config('justbetter.glide-directive.default_preset');
+        $sizes = $arguments['sizes'] ?? config('justbetter.glide-directive.sizes_default');
         $focus = $asset->get('focus');
-        $cover = isset($arguments['cover']);
-        $contain = isset($arguments['contain']);
-
-        $classAttr = match (true) {
-            $cover => 'object-cover w-full h-full object-[var(--focal-point)]'.(isset($arguments['class']) ? ' '.e($arguments['class']) : ''),
-            $contain => 'object-contain w-full h-full object-[var(--focal-point)]'.(isset($arguments['class']) ? ' '.e($arguments['class']) : ''),
-            default => e($arguments['class'] ?? ''),
-        };
 
         if (is_string($focus)) {
             $styleAttr = sprintf(' style="object-position: %s"', self::focusToPosition($focus));
@@ -40,15 +32,14 @@ class Responsive
 
         return view($view, [
             'image' => $asset,
-            'srcsets' => self::buildSrcsets($asset, $arguments['ratio'] ?? null),
+            'srcsets' => self::buildSrcsets($asset, $arguments['ratio'] ?? null, $arguments['width'] ?? null, $arguments['height'] ?? null),
             'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
             'alt' => $arguments['alt'] ?? ($asset->get('alt') ?? ''),
             'width' => $arguments['width'] ?? $asset->width(),
             'height' => $arguments['height'] ?? $asset->height(),
-            'classAttr' => $classAttr,
             'styleAttr' => $styleAttr ?? '',
-            'size' => $size,
+            'sizes' => $sizes,
         ]);
     }
 
@@ -61,9 +52,41 @@ class Responsive
         return vsprintf('%d%% %d%%', explode('-', $focus));
     }
 
-    protected static function buildSrcsets(Asset $asset, ?float $ratio): array
+    protected static function cropAndResize(Asset $asset, int $width, int $height): array
     {
-        $originalRatio = $asset->height() / $asset->width();
+        $formats = config('justbetter.glide-directive.default_formats');
+
+        $srcsetParts = [];
+        foreach ($formats as $format => $mimeType) {
+            $srcsetParts[$format] = [];
+
+            $url = self::getGlideUrl($asset, $width, $height, $format);
+            $url = url()->query($url, ['crop' => 1]);
+            $srcsetParts[$format][] = "{$url} {$width}w";
+
+            $retinaWidth = $width * 2;
+            $retinaHeight = $height * 2;
+
+            $url = self::getGlideUrl($asset, $retinaWidth, $retinaHeight, $format);
+            $url = url()->query($url, ['crop' => 1]);
+            $srcsetParts[$format][] = "{$url} {$retinaWidth}w";
+        }
+
+        return $srcsetParts;
+    }
+
+    protected static function buildSrcsets(Asset $asset, ?float $ratio, ?int $width = null, ?int $height = null): array
+    {
+        if ($width && $height) {
+            return self::cropAndResize($asset, $width, $height);
+        }
+
+        return self::getSrcSets($asset, $ratio);
+    }
+
+    protected static function getSrcSets(Asset $asset, ?float $ratio): array
+    {
+        $originalRatio = $asset->ratio();
 
         $useRatio = $ratio ?? $originalRatio;
 
@@ -104,7 +127,7 @@ class Responsive
         ]);
     }
 
-    public static function getGlideUrl(Asset $asset, int $width, ?int $height, string $format): ?string
+    public static function getGlideUrl(Asset $asset, int $width, ?int $height, string $format): string
     {
         $signatureFactory = SignatureFactory::create(config('app.key'));
 

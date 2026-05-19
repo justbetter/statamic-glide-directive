@@ -6,6 +6,9 @@
         </testsuite>
     </testsuites>
     <coverage/>
+    <php>
+        <env name="APP_KEY" value="base64:6G5y27wtEh59FK7Xnc8Yn22TxSt2eYuZpnQsQY2Sjls="/>
+    </php>
     <source>
         <include>
             <directory suffix=".php">./src</directory>
