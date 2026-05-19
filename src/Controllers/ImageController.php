@@ -49,8 +49,10 @@ class ImageController extends Controller
             $this->params['fit'] = 'crop-center';
         }
 
-        if ($this->asset->has('focus')) {
-            $this->params['fit'] = 'crop-'.$this->asset->get('focus');
+        $focus = $this->asset instanceof Asset ? $this->asset->get('focus') : null;
+
+        if ($focus) {
+            $this->params['fit'] = 'crop-'.$focus;
         }
 
         try {

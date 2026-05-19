@@ -59,17 +59,17 @@ class Responsive
         $srcsetParts = [];
         foreach ($formats as $format => $mimeType) {
             $srcsetParts[$format] = [];
-            
-                $url = self::getGlideUrl($asset, $width, $height, $format);
 
-                $url = url()->query($url, ['crop' => 1]);
-                $srcsetParts[$format][] = "{$url} {$width}w";
+            $url = self::getGlideUrl($asset, $width, $height, $format);
 
-                $url = self::getGlideUrl($asset, $width * 2, $height * 2, $format);
-                $url = url()->query($url, ['crop' => 1]);
+            $url = url()->query($url, ['crop' => 1]);
+            $srcsetParts[$format][] = "{$url} {$width}w";
 
-                $width = $width * 2;
-                $srcsetParts[$format][] = "{$url} {$width}w";
+            $url = self::getGlideUrl($asset, $width * 2, $height * 2, $format);
+            $url = url()->query($url, ['crop' => 1]);
+
+            $width = $width * 2;
+            $srcsetParts[$format][] = "{$url} {$width}w";
         }
 
         return $srcsetParts;
@@ -84,15 +84,13 @@ class Responsive
         return self::getSrcsets($asset, $ratio);
     }
 
-    protected static function getSrcSets(Asset $asset, ?float $ratio)
+    protected static function getSrcSets(Asset $asset, ?float $ratio): array
     {
         $formats = config('justbetter.glide-directive.default_formats');
-        $originalRatio = $asset->height() && $asset->width()
-            ? $asset->height() / $asset->width()
-            : null;
+        $originalRatio = $asset->ratio();
 
         $useRatio = $ratio ?? $originalRatio;
-
+        $srcsetParts = [];
 
         foreach ($formats as $format => $mimeType) {
             $srcsetParts[$format] = [];
@@ -129,7 +127,7 @@ class Responsive
         ]);
     }
 
-    public static function getGlideUrl(Asset $asset, int $width, ?int $height, string $format): ?string
+    public static function getGlideUrl(Asset $asset, int $width, ?int $height, string $format): string
     {
         $signatureFactory = SignatureFactory::create(config('app.key'));
 

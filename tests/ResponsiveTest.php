@@ -73,6 +73,29 @@ class ResponsiveTest extends TestCase
     }
 
     #[Test]
+    public function it_converts_focus_values_to_object_position_styles(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+        $asset->set('focus', '25-75');
+
+        $view = Responsive::handle($asset);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+
+        $this->assertStringContainsString('style="object-position: 25% 75%"', $rendered);
+
+        $asset->set('focus', 'center');
+
+        $view = Responsive::handle($asset);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+
+        $this->assertStringContainsString('style="object-position: center"', $rendered);
+
+        $asset->delete();
+    }
+
+    #[Test]
     public function it_creates_mime_type_source_when_configured(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
