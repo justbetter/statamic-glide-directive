@@ -159,7 +159,7 @@ class ImageControllerTest extends TestCase
         $imagePath = $storagePrefix.'/350/500/'.$signature.$asset->url().'.jpg';
 
         /** @var Server $server */
-        $server = $this->mock(Server::class, function (MockInterface $mock) use ($asset, $imagePath) {
+        $server = $this->mock(Server::class, function (MockInterface $mock) use ($asset, $imagePath, $signature) {
             $mock->shouldReceive('setSource')->andReturnSelf();
             $mock->shouldReceive('setSourcePathPrefix')->andReturnSelf();
             $mock->shouldReceive('setCache')->andReturnSelf();
@@ -167,13 +167,17 @@ class ImageControllerTest extends TestCase
             $mock->shouldReceive('setCachePathCallable')->andReturnSelf();
 
             $mock->shouldReceive('makeImage')
-                ->with($asset->url(), ['w' => 350, 'fm' => 'jpg', 'h' => 500, 'q' => 85, 'fit' => 'crop-focal'])
+                ->with($asset->url(), [
+                    'w' => 350,
+                    'h' => 500,
+                    'fm' => 'jpg',
+                    'q' => 85,
+                    's' => $signature,
+                ])
                 ->andReturn($imagePath);
         });
 
-        $controller = new ImageController(
-            $server
-        );
+        $controller = new ImageController($server);
 
         $this->expectException(NotFoundHttpException::class);
 
@@ -185,6 +189,129 @@ class ImageControllerTest extends TestCase
             ltrim($asset->url(), '/'),
             '.jpg'
         );
+    }
+
+    #[Test]
+    public function it_returns_generated_images_when_they_are_built(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+        $asset->set('focus', '25-75');
+        $asset->save();
+
+        $signatureFactory = new Signature(config('app.key'));
+        $params = [
+            's' => '',
+            'width' => 350,
+            'height' => 500,
+            'format' => '.jpg',
+        ];
+
+        $signature = $signatureFactory->generateSignature($asset->url(), $params);
+        $generatedPath = config('justbetter.glide-directive.cache_prefix')
+            .'/'.config('justbetter.glide-directive.storage_prefix')
+            .'/generated/image.jpg';
+
+        $directory = dirname(public_path($generatedPath));
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        file_put_contents(public_path($generatedPath), 'fake-image-content');
+
+        /** @var Server $server */
+        $server = $this->mock(Server::class, function (MockInterface $mock) use ($asset, $signature) {
+            $mock->shouldReceive('setSource')->andReturnSelf();
+            $mock->shouldReceive('setSourcePathPrefix')->andReturnSelf();
+            $mock->shouldReceive('setCache')->andReturnSelf();
+            $mock->shouldReceive('setCachePathPrefix')->andReturnSelf();
+            $mock->shouldReceive('setCachePathCallable')->andReturnSelf();
+
+            $mock->shouldReceive('makeImage')
+                ->with($asset->url(), [
+                    'w' => 350,
+                    'h' => 500,
+                    'fm' => 'jpg',
+                    'q' => 85,
+                    's' => $signature,
+                    'fit' => 'crop-25-75',
+                ])
+                ->andReturn('generated/image.jpg');
+        });
+
+        $request = request();
+        $request->merge(['crop' => 1]);
+
+        try {
+            $response = (new ImageController($server))->getImageByPreset(
+                $request,
+                350,
+                500,
+                $signature,
+                ltrim($asset->url(), '/'),
+                '.jpg'
+            );
+
+            $this->assertInstanceOf(BinaryFileResponse::class, $response);
+            $this->assertEquals('image/jpeg', $response->headers->get('Content-Type'));
+        } finally {
+            if (file_exists(public_path($generatedPath))) {
+                unlink(public_path($generatedPath));
+            }
+        }
+    }
+
+    #[Test]
+    public function it_returns_content_types_for_cached_images(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+        $signatureFactory = new Signature(config('app.key'));
+
+        $formats = [
+            '.jpeg' => 'image/jpeg',
+            '.png' => 'image/png',
+            '.gif' => 'image/gif',
+            '.avif' => 'image/avif',
+        ];
+
+        foreach ($formats as $format => $contentType) {
+            $params = [
+                's' => '',
+                'width' => 350,
+                'height' => 500,
+                'format' => $format,
+            ];
+
+            $signature = $signatureFactory->generateSignature($asset->url(), $params);
+            $expectedImagePath = public_path(
+                config('justbetter.glide-directive.cache_prefix')
+                .'/'.config('justbetter.glide-directive.storage_prefix')
+                .'/350/500/'.$signature.$asset->url().$format
+            );
+
+            $directory = dirname($expectedImagePath);
+            if (! is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+
+            file_put_contents($expectedImagePath, 'fake-image-content');
+
+            try {
+                $response = $this->controller->getImageByPreset(
+                    request(),
+                    350,
+                    500,
+                    $signature,
+                    ltrim($asset->url(), '/'),
+                    $format
+                );
+
+                $this->assertEquals($contentType, $response->headers->get('Content-Type'));
+            } finally {
+                if (file_exists($expectedImagePath)) {
+                    unlink($expectedImagePath);
+                }
+            }
+        }
     }
 
     #[Test]

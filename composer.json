@@ -9,8 +9,8 @@
     "require-dev": {
         "larastan/larastan": "^3.4",
         "laravel/pint": "^1.22",
-        "orchestra/testbench": "^10.3",
-        "pestphp/pest": "^3.7",
+        "orchestra/testbench": "^10.11|^11.0",
+        "pestphp/pest": "^3.0",
         "phpstan/phpstan-mockery": "^2.0",
         "phpunit/phpunit": "^11.5"
     },
@@ -58,7 +58,7 @@
         "test": "phpunit",
         "analyse": "phpstan --memory-limit=1G",
         "style": "pint --test",
-        "coverage": "XDEBUG_MODE=coverage php vendor/bin/pest --coverage --min=93",
+        "coverage": "XDEBUG_MODE=coverage php vendor/bin/pest --coverage --min=100",
         "quality": [
             "@test",
             "@analyse",
