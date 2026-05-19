@@ -1,6 +1,14 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.2.0...3.2.0)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.3.0...3.3.0)
+## [3.3.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.3.0) - 2026-05-19
+
+### Changed
+- Refactor resizing (#30)
+- Optimizations cropping and resizing (#32)
+
+**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/3.2.0...3.3.0
+
 ## [3.2.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.2.0) - 2026-02-13
 
 ### Added
