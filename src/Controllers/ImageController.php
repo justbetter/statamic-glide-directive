@@ -31,18 +31,28 @@ class ImageController extends Controller
     ): BinaryFileResponse {
         $file = ltrim($file, '/');
         $format = ltrim($format, '.');
-
         $this->asset = AssetFacade::findByUrl('/'.$file);
-
-        $this->params = [
-            's' => $signature,
-            'width' => $width,
-            'height' => $height,
-            'format' => $format,
-        ];
 
         if (! $this->asset) {
             abort(404);
+        }
+
+        $this->params = [
+            'w' => $width,
+            'h' => $height,
+            'fm' => $format,
+            'q' => 85,
+            's' => $signature,
+        ];
+
+        if ($request->has('crop')) {
+            $this->params['fit'] = 'crop-center';
+        }
+
+        $focus = $this->asset instanceof Asset ? $this->asset->get('focus') : null;
+
+        if (is_string($focus)) {
+            $this->params['fit'] = 'crop-'.$focus;
         }
 
         try {
@@ -82,17 +92,6 @@ class ImageController extends Controller
             return null;
         }
 
-        $params = [
-            'w' => $this->params['width'],
-            'fm' => $this->params['format'],
-            'q' => 85,
-        ];
-
-        if (! empty($this->params['height'])) {
-            $params['h'] = $this->params['height'];
-            $params['fit'] = 'crop-focal';
-        }
-
         $source = Storage::build([
             'driver' => 'local',
             'root' => public_path(),
@@ -117,7 +116,7 @@ class ImageController extends Controller
             fn (string $path, array $params) => $expectedRelativePath
         );
 
-        $generated = $this->server->makeImage($this->asset->url(), $params);
+        $generated = $this->server->makeImage($this->asset->url(), $this->params);
 
         return $cacheRoot.'/'.ltrim($generated, '/');
     }
@@ -130,10 +129,10 @@ class ImageController extends Controller
 
     protected function getCachePathInsideCacheRoot(): string
     {
-        $width = (int) $this->params['width'];
-        $height = (int) $this->params['height'];
+        $width = (int) $this->params['w'];
+        $height = (int) $this->params['h'];
         $signature = trim($this->params['s'], '/');
-        $format = ltrim($this->params['format'], '.');
+        $format = ltrim($this->params['fm'], '.');
 
         $assetUrl = ltrim($this->asset?->url() ?? '', '/');
 
@@ -150,7 +149,7 @@ class ImageController extends Controller
 
     protected function getContentType(): string
     {
-        return match (strtolower($this->params['format'])) {
+        return match (strtolower($this->params['fm'])) {
             'jpg', 'jpeg' => 'image/jpeg',
             'png' => 'image/png',
             'gif' => 'image/gif',

@@ -20,7 +20,6 @@ class ServiceProviderTest extends TestCase
     {
         $this->assertNotNull(config('justbetter.glide-directive'));
         $this->assertIsArray(config('justbetter.glide-directive.default_widths'));
-        $this->assertIsArray(config('justbetter.glide-directive.sizes'));
         $this->assertIsArray(config('justbetter.glide-directive.default_formats'));
     }
 

@@ -9,8 +9,8 @@
     "require-dev": {
         "larastan/larastan": "^3.4",
         "laravel/pint": "^1.22",
-        "orchestra/testbench": "^10.3",
-        "pestphp/pest": "^3.7",
+        "orchestra/testbench": "^10.11|^11.0",
+        "pestphp/pest": "^3.0",
         "phpstan/phpstan-mockery": "^2.0",
         "phpunit/phpunit": "^11.5"
     },

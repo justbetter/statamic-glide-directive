@@ -13,7 +13,7 @@
             <source
                 type="image/{{ $type }}"
                 srcset="{{ implode(', ', $srcset) }}"
-                sizes="{{ config('justbetter.glide-directive.sizes')[$size] }}"
+                sizes="{{ $sizes ?? '100vw' }}"
             >
         @endforeach
 
@@ -24,8 +24,8 @@
             width="{{ $width }}"
             height="{{ $height }}"
             loading="lazy"
-            class="{{ $classAttr ?? '' }}"
             {!! $styleAttr ?? '' !!}
+            class="{{ $class }}"
         />
     @endif
 </picture>
