@@ -10,6 +10,8 @@ use JustBetter\GlideDirective\Controllers\ImageController;
 $patterns = [
     'file' => '.*',
     'format' => '\..+',
+    'height' => '[0-9]+',
+    'width' => '[0-9]+',
 ];
 
 Route::get(
