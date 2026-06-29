@@ -55,6 +55,22 @@ class ImageControllerTest extends TestCase
     }
 
     #[Test]
+    public function it_returns_404_when_the_route_width_is_not_numeric(): void
+    {
+        $this->withoutMiddleware()
+            ->get('/img/glide-image/wide/500/signature/test.png.webp')
+            ->assertNotFound();
+    }
+
+    #[Test]
+    public function it_returns_404_when_the_route_height_is_not_numeric(): void
+    {
+        $this->withoutMiddleware()
+            ->get('/img/glide-image/350/tall/signature/test.png.webp')
+            ->assertNotFound();
+    }
+
+    #[Test]
     public function it_handles_different_format_extensions(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
