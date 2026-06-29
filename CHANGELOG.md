@@ -1,6 +1,14 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/4.1.0...4.1.0)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/4.1.1...4.1.1)
+## [4.1.1](https://github.com/justbetter/statamic-glide-directive/releases/tag/4.1.1) - 2026-06-29
+
+### Changed
+- Validate the height and width of the route (#35)
+
+
+**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/4.1.0...4.1.1
+
 ## [4.1.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/4.1.0) - 2026-05-19
 
 ### Changed
