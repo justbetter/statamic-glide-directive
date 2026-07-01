@@ -1,6 +1,14 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.3.0...3.3.0)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/...3.3.2)
+## [3.3.2](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.3.2) - 2026-06-29
+
+### Changed
+- Validate width and height (#36)
+
+
+**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/3.3.0...3.3.2
+
 ## [3.3.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.3.0) - 2026-05-19
 
 ### Changed
