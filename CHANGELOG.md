@@ -1,6 +1,18 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/4.1.1...3.3.1)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/4.2.0...4.2.0)
+## [4.2.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/4.2.0) - 2026-09-08
+
+### What's Changed
+* Make glide directive work with private asset containers by @BobWez98 in https://github.com/justbetter/statamic-glide-directive/pull/38
+* Fixed ratio calculation by @kevinmeijer97 in https://github.com/justbetter/statamic-glide-directive/pull/37
+* Added base package by @kevinmeijer97 in https://github.com/justbetter/statamic-glide-directive/pull/34
+* Fix error on file not found by @indykoning in https://github.com/justbetter/statamic-glide-directive/pull/39
+* Change default sizes attribute to 'auto' by @indykoning in https://github.com/justbetter/statamic-glide-directive/pull/40
+
+
+**Full Changelog**: https://github.com/justbetter/statamic-glide-directive/compare/3.3.1...4.2.0
+
 ## [4.1.1](https://github.com/justbetter/statamic-glide-directive/releases/tag/4.1.1) - 2026-06-29
 
 ### Changed
