@@ -208,6 +208,35 @@ class ImageControllerTest extends TestCase
     }
 
     #[Test]
+    public function it_returns_404_when_asset_exists_but_file_is_missing(): void
+    {
+        $asset = $this->uploadTestAsset('upload_404.png');
+        @unlink($asset->resolvedPath());
+        $signatureFactory = new Signature(config('app.key'));
+
+        $params = [
+            's' => '',
+            'width' => 350,
+            'height' => 500,
+            'format' => '.webp',
+        ];
+
+        $signature = $signatureFactory->generateSignature($asset->url(), $params);
+        $params['s'] = $signature;
+
+        $this->expectException(NotFoundHttpException::class);
+
+        $response = $this->controller->getImageByPreset(
+            request(),
+            350,
+            500,
+            $signature,
+            ltrim($asset->url(), '/'),
+            '.webp'
+        );
+    }
+
+    #[Test]
     public function it_returns_generated_images_when_they_are_built(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
