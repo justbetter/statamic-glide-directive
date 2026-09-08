@@ -13,7 +13,7 @@
             <source
                 type="image/{{ $type }}"
                 srcset="{{ implode(', ', $srcset) }}"
-                sizes="{{ $sizes ?? '100vw' }}"
+                sizes="{{ $sizes ?? 'auto' }}"
             >
         @endforeach
 
