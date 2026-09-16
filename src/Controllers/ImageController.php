@@ -42,7 +42,9 @@ class ImageController extends Controller
             'w' => $width,
             'h' => $height,
             'fm' => $format,
-            'q' => 85,
+            'q' => $request->has('quality')
+                ? max(0, min(100, $request->integer('quality')))
+                : config('justbetter.glide-directive.quality', 85),
             's' => $signature,
         ];
 
@@ -138,6 +140,7 @@ class ImageController extends Controller
     {
         $width = (int) $this->params['w'];
         $height = (int) $this->params['h'];
+        $quality = (int) $this->params['q'];
         $signature = trim($this->params['s'], '/');
         $format = ltrim($this->params['fm'], '.');
 
@@ -145,6 +148,7 @@ class ImageController extends Controller
 
         return $width.'/'
             .$height.'/'
+            .$quality.'/'
             .$signature.'/'
             .$assetUrl.'.'.$format;
     }

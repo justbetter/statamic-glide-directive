@@ -32,7 +32,7 @@ class Responsive
 
         return view($view, [
             'image' => $asset,
-            'srcsets' => self::buildSrcsets($asset, $arguments['ratio'] ?? null, $arguments['width'] ?? null, $arguments['height'] ?? null),
+            'srcsets' => self::buildSrcsets($asset, $arguments['ratio'] ?? null, $arguments['width'] ?? null, $arguments['height'] ?? null, $arguments['quality'] ?? null),
             'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
             'alt' => $arguments['alt'] ?? ($asset->get('alt') ?? ''),
@@ -52,7 +52,7 @@ class Responsive
         return vsprintf('%d%% %d%%', explode('-', $focus));
     }
 
-    protected static function cropAndResize(Asset $asset, int $width, int $height): array
+    protected static function cropAndResize(Asset $asset, int $width, int $height, ?int $quality = null): array
     {
         $formats = config('justbetter.glide-directive.default_formats');
 
@@ -60,14 +60,14 @@ class Responsive
         foreach ($formats as $format => $mimeType) {
             $srcsetParts[$format] = [];
 
-            $url = self::getGlideUrl($asset, $width, $height, $format);
+            $url = self::getGlideUrl($asset, $width, $height, $format, $quality);
             $url = url()->query($url, ['crop' => 1]);
             $srcsetParts[$format][] = "{$url} {$width}w";
 
             $retinaWidth = $width * 2;
             $retinaHeight = $height * 2;
 
-            $url = self::getGlideUrl($asset, $retinaWidth, $retinaHeight, $format);
+            $url = self::getGlideUrl($asset, $retinaWidth, $retinaHeight, $format, $quality);
             $url = url()->query($url, ['crop' => 1]);
             $srcsetParts[$format][] = "{$url} {$retinaWidth}w";
         }
@@ -75,16 +75,16 @@ class Responsive
         return $srcsetParts;
     }
 
-    protected static function buildSrcsets(Asset $asset, ?float $ratio, ?int $width = null, ?int $height = null): array
+    protected static function buildSrcsets(Asset $asset, ?float $ratio, ?int $width = null, ?int $height = null, ?int $quality = null): array
     {
         if ($width && $height) {
-            return self::cropAndResize($asset, $width, $height);
+            return self::cropAndResize($asset, $width, $height, $quality);
         }
 
-        return self::getSrcSets($asset, $ratio);
+        return self::getSrcSets($asset, $ratio, $quality);
     }
 
-    protected static function getSrcSets(Asset $asset, ?float $ratio): array
+    protected static function getSrcSets(Asset $asset, ?float $ratio, ?int $quality = null): array
     {
         $originalRatio = $asset->ratio();
 
@@ -104,7 +104,7 @@ class Responsive
                     'ratio' => $useRatio,
                 ];
 
-                $url = self::getGlideUrl($asset, $width, $height, $format);
+                $url = self::getGlideUrl($asset, $width, $height, $format, $quality);
                 $srcsetParts[$format][] = "{$url} {$srcset['width']}w";
             }
         }
@@ -127,15 +127,21 @@ class Responsive
         ]);
     }
 
-    public static function getGlideUrl(Asset $asset, int $width, ?int $height, string $format): string
+    public static function getGlideUrl(Asset $asset, int $width, ?int $height, string $format, ?int $quality = null): string
     {
         $signatureFactory = SignatureFactory::create(config('app.key'));
 
         $params = $signatureFactory->addSignature($asset->url(), ['width' => $width, 'height' => $height, 'format' => '.'.$format]);
 
-        return route('glide-image.preset', array_merge($params, [
+        $url = route('glide-image.preset', array_merge($params, [
             'file' => ltrim($asset->url(), '/'),
         ]));
+
+        if ($quality !== null) {
+            $url = url()->query($url, ['quality' => max(0, min(100, $quality))]);
+        }
+
+        return $url;
     }
 
     protected static function getAttributeBag(array $arguments): string
