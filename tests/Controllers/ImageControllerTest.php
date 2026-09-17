@@ -115,7 +115,7 @@ class ImageControllerTest extends TestCase
 
         $cachePath = config('justbetter.glide-directive.cache_prefix');
         $storagePrefix = config('justbetter.glide-directive.storage_prefix');
-        $expectedImagePath = public_path($cachePath.'/'.$storagePrefix.'/350/500/'.$signature.$asset->url().'.webp');
+        $expectedImagePath = public_path($cachePath.'/'.$storagePrefix.'/350/500/85/'.$signature.$asset->url().'.webp');
 
         $directory = dirname($expectedImagePath);
         if (! is_dir($directory)) {
@@ -172,7 +172,7 @@ class ImageControllerTest extends TestCase
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
 
         $storagePrefix = config('justbetter.glide-directive.storage_prefix');
-        $imagePath = $storagePrefix.'/350/500/'.$signature.$asset->url().'.jpg';
+        $imagePath = $storagePrefix.'/350/500/85/'.$signature.$asset->url().'.jpg';
 
         /** @var Server $server */
         $server = $this->mock(Server::class, function (MockInterface $mock) use ($asset, $imagePath, $signature) {
@@ -330,7 +330,7 @@ class ImageControllerTest extends TestCase
             $expectedImagePath = public_path(
                 config('justbetter.glide-directive.cache_prefix')
                 .'/'.config('justbetter.glide-directive.storage_prefix')
-                .'/350/500/'.$signature.$asset->url().$format
+                .'/350/500/85/'.$signature.$asset->url().$format
             );
 
             $directory = dirname($expectedImagePath);
