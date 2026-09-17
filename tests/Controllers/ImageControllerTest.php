@@ -208,6 +208,67 @@ class ImageControllerTest extends TestCase
     }
 
     #[Test]
+    public function it_overrides_and_clamps_quality_from_an_unsigned_query_param(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+        $signatureFactory = new Signature(config('app.key'));
+
+        $cases = [
+            50 => 50,
+            150 => 100,
+            -20 => 0,
+        ];
+
+        foreach ($cases as $requestedQuality => $expectedQuality) {
+            $params = [
+                's' => '',
+                'width' => 350,
+                'height' => 500,
+                'format' => '.jpg',
+            ];
+
+            $signature = $signatureFactory->generateSignature($asset->url(), $params);
+
+            /** @var Server $server */
+            $server = $this->mock(Server::class, function (MockInterface $mock) use ($asset, $signature, $expectedQuality) {
+                $mock->shouldReceive('setSource')->andReturnSelf();
+                $mock->shouldReceive('setSourcePathPrefix')->andReturnSelf();
+                $mock->shouldReceive('setCache')->andReturnSelf();
+                $mock->shouldReceive('setCachePathPrefix')->andReturnSelf();
+                $mock->shouldReceive('setCachePathCallable')->andReturnSelf();
+
+                $mock->shouldReceive('makeImage')
+                    ->with($asset->path(), [
+                        'w' => 350,
+                        'h' => 500,
+                        'fm' => 'jpg',
+                        'q' => $expectedQuality,
+                        's' => $signature,
+                    ])
+                    ->andReturn('generated/image.jpg');
+            });
+
+            $request = request();
+            $request->merge(['quality' => $requestedQuality]);
+
+            try {
+                (new ImageController($server))->getImageByPreset(
+                    $request,
+                    350,
+                    500,
+                    $signature,
+                    ltrim($asset->url(), '/'),
+                    '.jpg'
+                );
+
+                $this->fail('Expected a NotFoundHttpException to be thrown.');
+            } catch (NotFoundHttpException $e) {
+                $this->assertInstanceOf(NotFoundHttpException::class, $e);
+            }
+        }
+    }
+
+    #[Test]
     public function it_returns_404_when_asset_exists_but_file_is_missing(): void
     {
         $asset = $this->uploadTestAsset('upload_404.png');
