@@ -115,7 +115,7 @@ class ImageControllerTest extends TestCase
 
         $cachePath = config('justbetter.glide-directive.cache_prefix');
         $storagePrefix = config('justbetter.glide-directive.storage_prefix');
-        $expectedImagePath = public_path($cachePath.'/'.$storagePrefix.'/350/500/85/'.$signature.$asset->url().'.webp');
+        $expectedImagePath = public_path($cachePath.'/'.$storagePrefix.'/350/500/'.$signature.$asset->url().'.webp');
 
         $directory = dirname($expectedImagePath);
         if (! is_dir($directory)) {
@@ -157,6 +157,60 @@ class ImageControllerTest extends TestCase
     }
 
     #[Test]
+    public function it_only_adds_a_quality_segment_to_the_cache_path_when_overridden(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+        $signatureFactory = new Signature(config('app.key'));
+
+        $params = [
+            's' => '',
+            'width' => 350,
+            'height' => 500,
+            'format' => '.webp',
+        ];
+
+        $signature = $signatureFactory->generateSignature($asset->url(), $params);
+
+        $cachePath = config('justbetter.glide-directive.cache_prefix');
+        $storagePrefix = config('justbetter.glide-directive.storage_prefix');
+        $expectedImagePath = public_path($cachePath.'/'.$storagePrefix.'/350/500/60/'.$signature.$asset->url().'.webp');
+
+        $directory = dirname($expectedImagePath);
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        file_put_contents($expectedImagePath, 'fake-image-content');
+
+        $request = request();
+        $request->merge(['quality' => 60]);
+
+        try {
+            $response = $this->controller->getImageByPreset(
+                $request,
+                350,
+                500,
+                $signature,
+                ltrim($asset->url(), '/'),
+                '.webp'
+            );
+
+            $this->assertInstanceOf(BinaryFileResponse::class, $response);
+            $this->assertEquals(200, $response->getStatusCode());
+        } finally {
+            if (file_exists($expectedImagePath)) {
+                unlink($expectedImagePath);
+            }
+
+            $dir = dirname($expectedImagePath);
+            while ($dir && $dir !== $cachePath && is_dir($dir) && scandir($dir) && count(scandir($dir)) === 2) {
+                rmdir($dir);
+                $dir = dirname($dir);
+            }
+        }
+    }
+
+    #[Test]
     public function it_returns_404_when_image_file_missing_after_valid_signature(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
@@ -172,7 +226,7 @@ class ImageControllerTest extends TestCase
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
 
         $storagePrefix = config('justbetter.glide-directive.storage_prefix');
-        $imagePath = $storagePrefix.'/350/500/85/'.$signature.$asset->url().'.jpg';
+        $imagePath = $storagePrefix.'/350/500/'.$signature.$asset->url().'.jpg';
 
         /** @var Server $server */
         $server = $this->mock(Server::class, function (MockInterface $mock) use ($asset, $imagePath, $signature) {
@@ -391,7 +445,7 @@ class ImageControllerTest extends TestCase
             $expectedImagePath = public_path(
                 config('justbetter.glide-directive.cache_prefix')
                 .'/'.config('justbetter.glide-directive.storage_prefix')
-                .'/350/500/85/'.$signature.$asset->url().$format
+                .'/350/500/'.$signature.$asset->url().$format
             );
 
             $directory = dirname($expectedImagePath);
