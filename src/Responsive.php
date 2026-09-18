@@ -136,18 +136,12 @@ class Responsive
             'width' => $width,
             'height' => $height,
             'format' => '.'.$format,
-            'quality' => $quality ?? config('justbetter.glide-directive.quality', 85)
+            'quality' => $quality ?? config('justbetter.glide-directive.quality', 85),
         ]);
 
-        $url = route('glide-image.preset', array_merge($params, [
+        return route('glide-image.preset', array_merge($params, [
             'file' => ltrim($asset->url(), '/'),
         ]));
-
-        if ($quality !== null) {
-            $url = url()->query($url);
-        }
-
-        return $url;
     }
 
     protected static function getAttributeBag(array $arguments): string
