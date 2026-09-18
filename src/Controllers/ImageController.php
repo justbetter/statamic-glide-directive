@@ -146,7 +146,6 @@ class ImageController extends Controller
 
         $assetUrl = ltrim($this->asset?->url() ?? '', '/');
 
-
         return $width.'/'
             .$height.'/'
             .$quality.'/'
