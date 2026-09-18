@@ -64,11 +64,12 @@ class Responsive
 
             $url = self::getGlideUrl($asset, $width, $height, $format);
             $url = url()->query($url, ['crop' => 1]);
-            $srcsetParts[$format][] = "{$url} {$width}w";
 
+            $srcsetParts[$format][] = "{$url} {$width}w";
 
             $url = self::getGlideUrl($asset, $retinaWidth, $retinaHeight, $format);
             $url = url()->query($url, ['crop' => 1]);
+
             $srcsetParts[$format][] = "{$url} {$retinaWidth}w";
         }
 
