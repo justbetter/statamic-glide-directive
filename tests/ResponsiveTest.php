@@ -96,6 +96,70 @@ class ResponsiveTest extends TestCase
     }
 
     #[Test]
+    public function it_uses_the_configured_default_quality_when_not_specified(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $view = Responsive::handle($asset, [
+            'width' => 100,
+            'height' => 100,
+        ]);
+
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+
+        $this->assertStringContainsString('/100/100/85/', $rendered);
+
+        $asset->delete();
+    }
+
+    #[Test]
+    public function it_applies_a_custom_quality_override(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $view = Responsive::handle($asset, [
+            'width' => 100,
+            'height' => 100,
+            'quality' => 50,
+        ]);
+
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+
+        $this->assertStringContainsString('/100/100/50/', $rendered);
+        $this->assertStringNotContainsString('/100/100/85/', $rendered);
+
+        $asset->delete();
+    }
+
+    #[Test]
+    public function it_clamps_out_of_range_quality_values(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $view = Responsive::handle($asset, [
+            'width' => 100,
+            'height' => 100,
+            'quality' => 150,
+        ]);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+        $this->assertStringContainsString('/100/100/100/', $rendered);
+
+        $view = Responsive::handle($asset, [
+            'width' => 100,
+            'height' => 100,
+            'quality' => -20,
+        ]);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+        $this->assertStringContainsString('/100/100/0/', $rendered);
+
+        $asset->delete();
+    }
+
+    #[Test]
     public function it_can_focus_to_position(): void
     {
         $focuspoint = Responsive::focusToPosition('50-50');

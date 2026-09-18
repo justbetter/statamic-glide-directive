@@ -26,6 +26,7 @@ class ImageController extends Controller
         Request $request,
         int $width,
         int $height,
+        int $quality,
         string $signature,
         string $file,
         string $format
@@ -42,7 +43,7 @@ class ImageController extends Controller
             'w' => $width,
             'h' => $height,
             'fm' => $format,
-            'q' => 85,
+            'q' => $quality,
             's' => $signature,
         ];
 
@@ -63,6 +64,7 @@ class ImageController extends Controller
                 's' => $signature,
                 'width' => $width,
                 'height' => $height,
+                'quality' => $this->params['q'],
                 'format' => '.'.$format,
             ]);
         } catch (SignatureException $e) {
@@ -138,6 +140,7 @@ class ImageController extends Controller
     {
         $width = (int) $this->params['w'];
         $height = (int) $this->params['h'];
+        $quality = (int) $this->params['q'];
         $signature = trim($this->params['s'], '/');
         $format = ltrim($this->params['fm'], '.');
 
@@ -145,6 +148,7 @@ class ImageController extends Controller
 
         return $width.'/'
             .$height.'/'
+            .$quality.'/'
             .$signature.'/'
             .$assetUrl.'.'.$format;
     }
