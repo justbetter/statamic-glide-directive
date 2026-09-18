@@ -96,40 +96,65 @@ class ResponsiveTest extends TestCase
     }
 
     #[Test]
-    public function it_appends_a_clamped_quality_query_param_when_given(): void
-    {
-        $asset = $this->uploadTestAsset('upload.png');
-
-        $url = Responsive::getGlideUrl($asset, 350, 500, 'jpg', 50);
-        $this->assertStringContainsString('quality=50', $url);
-
-        $url = Responsive::getGlideUrl($asset, 350, 500, 'jpg', 150);
-        $this->assertStringContainsString('quality=100', $url);
-
-        $url = Responsive::getGlideUrl($asset, 350, 500, 'jpg', -20);
-        $this->assertStringContainsString('quality=0', $url);
-
-        $url = Responsive::getGlideUrl($asset, 350, 500, 'jpg');
-        $this->assertStringNotContainsString('quality=', $url);
-
-        $asset->delete();
-    }
-
-    #[Test]
-    public function it_passes_a_custom_quality_through_the_responsive_directive(): void
+    public function it_uses_the_configured_default_quality_when_not_specified(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
 
         $view = Responsive::handle($asset, [
             'width' => 100,
             'height' => 100,
-            'quality' => 40,
         ]);
 
         /* @phpstan-ignore-next-line */
         $rendered = $view->render();
 
-        $this->assertStringContainsString('quality=40', $rendered);
+        $this->assertStringContainsString('/100/100/85/', $rendered);
+
+        $asset->delete();
+    }
+
+    #[Test]
+    public function it_applies_a_custom_quality_override(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $view = Responsive::handle($asset, [
+            'width' => 100,
+            'height' => 100,
+            'quality' => 50,
+        ]);
+
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+
+        $this->assertStringContainsString('/100/100/50/', $rendered);
+        $this->assertStringNotContainsString('/100/100/85/', $rendered);
+
+        $asset->delete();
+    }
+
+    #[Test]
+    public function it_clamps_out_of_range_quality_values(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $view = Responsive::handle($asset, [
+            'width' => 100,
+            'height' => 100,
+            'quality' => 150,
+        ]);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+        $this->assertStringContainsString('/100/100/100/', $rendered);
+
+        $view = Responsive::handle($asset, [
+            'width' => 100,
+            'height' => 100,
+            'quality' => -20,
+        ]);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+        $this->assertStringContainsString('/100/100/0/', $rendered);
 
         $asset->delete();
     }

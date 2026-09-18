@@ -22,6 +22,7 @@ class Responsive
 
         $sizes = $arguments['sizes'] ?? config('justbetter.glide-directive.sizes_default');
         $focus = $asset->get('focus');
+        $quality = isset($arguments['quality']) ? max(0, min(100, $arguments['quality'])) : config()->integer('justbetter.glide-directive.quality', 85);
 
         if (is_string($focus)) {
             $styleAttr = sprintf(' style="object-position: %s"', self::focusToPosition($focus));
@@ -32,7 +33,7 @@ class Responsive
 
         return view($view, [
             'image' => $asset,
-            'srcsets' => self::buildSrcsets($asset, $arguments['ratio'] ?? null, $arguments['width'] ?? null, $arguments['height'] ?? null, $arguments['quality'] ?? null),
+            'srcsets' => self::buildSrcsets($asset, $arguments['ratio'] ?? null, $arguments['width'] ?? null, $arguments['height'] ?? null, $quality),
             'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
             'alt' => $arguments['alt'] ?? ($asset->get('alt') ?? ''),
@@ -131,17 +132,16 @@ class Responsive
     {
         $signatureFactory = SignatureFactory::create(config('app.key'));
 
-        $params = $signatureFactory->addSignature($asset->url(), ['width' => $width, 'height' => $height, 'format' => '.'.$format]);
+        $params = $signatureFactory->addSignature($asset->url(), [
+            'width' => $width,
+            'height' => $height,
+            'format' => '.'.$format,
+            'quality' => $quality ?? config('justbetter.glide-directive.quality', 85),
+        ]);
 
-        $url = route('glide-image.preset', array_merge($params, [
+        return route('glide-image.preset', array_merge($params, [
             'file' => ltrim($asset->url(), '/'),
         ]));
-
-        if ($quality !== null) {
-            $url = url()->query($url, ['quality' => max(0, min(100, $quality))]);
-        }
-
-        return $url;
     }
 
     protected static function getAttributeBag(array $arguments): string

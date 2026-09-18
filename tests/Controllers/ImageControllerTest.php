@@ -48,6 +48,7 @@ class ImageControllerTest extends TestCase
             request(),
             350,
             500,
+            85,
             'dummy-signature',
             'non-existent-file.jpg',
             'jpg'
@@ -65,6 +66,7 @@ class ImageControllerTest extends TestCase
             request(),
             350,
             500,
+            85,
             'invalid-signature',
             ltrim($asset->url(), '/'),
             '.webp'
@@ -85,6 +87,7 @@ class ImageControllerTest extends TestCase
                     request(),
                     350,
                     500,
+                    85,
                     'invalid-signature',
                     ltrim($asset->url(), '/'),
                     $format
@@ -108,6 +111,7 @@ class ImageControllerTest extends TestCase
             'width' => 350,
             'height' => 500,
             'format' => '.webp',
+            'quality' => 85,
         ];
 
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
@@ -115,7 +119,7 @@ class ImageControllerTest extends TestCase
 
         $cachePath = config('justbetter.glide-directive.cache_prefix');
         $storagePrefix = config('justbetter.glide-directive.storage_prefix');
-        $expectedImagePath = public_path($cachePath.'/'.$storagePrefix.'/350/500/'.$signature.$asset->url().'.webp');
+        $expectedImagePath = public_path($cachePath.'/'.$storagePrefix.'/350/500/85/'.$signature.$asset->url().'.webp');
 
         $directory = dirname($expectedImagePath);
         if (! is_dir($directory)) {
@@ -129,6 +133,7 @@ class ImageControllerTest extends TestCase
                 request(),
                 350,
                 500,
+                85,
                 $signature,
                 ltrim($asset->url(), '/'),
                 '.webp'
@@ -157,7 +162,7 @@ class ImageControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_only_adds_a_quality_segment_to_the_cache_path_when_overridden(): void
+    public function it_includes_the_route_quality_in_the_cache_path(): void
     {
         $asset = $this->uploadTestAsset('upload.png');
         $signatureFactory = new Signature(config('app.key'));
@@ -167,6 +172,7 @@ class ImageControllerTest extends TestCase
             'width' => 350,
             'height' => 500,
             'format' => '.webp',
+            'quality' => 60,
         ];
 
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
@@ -182,14 +188,12 @@ class ImageControllerTest extends TestCase
 
         file_put_contents($expectedImagePath, 'fake-image-content');
 
-        $request = request();
-        $request->merge(['quality' => 60]);
-
         try {
             $response = $this->controller->getImageByPreset(
-                $request,
+                request(),
                 350,
                 500,
+                60,
                 $signature,
                 ltrim($asset->url(), '/'),
                 '.webp'
@@ -197,6 +201,7 @@ class ImageControllerTest extends TestCase
 
             $this->assertInstanceOf(BinaryFileResponse::class, $response);
             $this->assertEquals(200, $response->getStatusCode());
+            $this->assertSame($expectedImagePath, $response->getFile()->getPathname());
         } finally {
             if (file_exists($expectedImagePath)) {
                 unlink($expectedImagePath);
@@ -221,6 +226,7 @@ class ImageControllerTest extends TestCase
             'width' => 350,
             'height' => 500,
             'format' => '.jpg',
+            'quality' => 85,
         ];
 
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
@@ -255,71 +261,11 @@ class ImageControllerTest extends TestCase
             request(),
             350,
             500,
+            85,
             $signature,
             ltrim($asset->url(), '/'),
             '.jpg'
         );
-    }
-
-    #[Test]
-    public function it_overrides_and_clamps_quality_from_an_unsigned_query_param(): void
-    {
-        $asset = $this->uploadTestAsset('upload.png');
-        $signatureFactory = new Signature(config('app.key'));
-
-        $cases = [
-            50 => 50,
-            150 => 100,
-            -20 => 0,
-        ];
-
-        foreach ($cases as $requestedQuality => $expectedQuality) {
-            $params = [
-                's' => '',
-                'width' => 350,
-                'height' => 500,
-                'format' => '.jpg',
-            ];
-
-            $signature = $signatureFactory->generateSignature($asset->url(), $params);
-
-            /** @var Server $server */
-            $server = $this->mock(Server::class, function (MockInterface $mock) use ($asset, $signature, $expectedQuality) {
-                $mock->shouldReceive('setSource')->andReturnSelf();
-                $mock->shouldReceive('setSourcePathPrefix')->andReturnSelf();
-                $mock->shouldReceive('setCache')->andReturnSelf();
-                $mock->shouldReceive('setCachePathPrefix')->andReturnSelf();
-                $mock->shouldReceive('setCachePathCallable')->andReturnSelf();
-
-                $mock->shouldReceive('makeImage')
-                    ->with($asset->path(), [
-                        'w' => 350,
-                        'h' => 500,
-                        'fm' => 'jpg',
-                        'q' => $expectedQuality,
-                        's' => $signature,
-                    ])
-                    ->andReturn('generated/image.jpg');
-            });
-
-            $request = request();
-            $request->merge(['quality' => $requestedQuality]);
-
-            try {
-                (new ImageController($server))->getImageByPreset(
-                    $request,
-                    350,
-                    500,
-                    $signature,
-                    ltrim($asset->url(), '/'),
-                    '.jpg'
-                );
-
-                $this->fail('Expected a NotFoundHttpException to be thrown.');
-            } catch (NotFoundHttpException $e) {
-                $this->assertInstanceOf(NotFoundHttpException::class, $e);
-            }
-        }
     }
 
     #[Test]
@@ -334,6 +280,7 @@ class ImageControllerTest extends TestCase
             'width' => 350,
             'height' => 500,
             'format' => '.webp',
+            'quality' => 85,
         ];
 
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
@@ -345,6 +292,7 @@ class ImageControllerTest extends TestCase
             request(),
             350,
             500,
+            85,
             $signature,
             ltrim($asset->url(), '/'),
             '.webp'
@@ -364,6 +312,7 @@ class ImageControllerTest extends TestCase
             'width' => 350,
             'height' => 500,
             'format' => '.jpg',
+            'quality' => 85,
         ];
 
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
@@ -406,6 +355,7 @@ class ImageControllerTest extends TestCase
                 $request,
                 350,
                 500,
+                85,
                 $signature,
                 ltrim($asset->url(), '/'),
                 '.jpg'
@@ -439,13 +389,14 @@ class ImageControllerTest extends TestCase
                 'width' => 350,
                 'height' => 500,
                 'format' => $format,
+                'quality' => 85,
             ];
 
             $signature = $signatureFactory->generateSignature($asset->url(), $params);
             $expectedImagePath = public_path(
                 config('justbetter.glide-directive.cache_prefix')
                 .'/'.config('justbetter.glide-directive.storage_prefix')
-                .'/350/500/'.$signature.$asset->url().$format
+                .'/350/500/85/'.$signature.$asset->url().$format
             );
 
             $directory = dirname($expectedImagePath);
@@ -460,6 +411,7 @@ class ImageControllerTest extends TestCase
                     request(),
                     350,
                     500,
+                    85,
                     $signature,
                     ltrim($asset->url(), '/'),
                     $format
@@ -489,6 +441,7 @@ class ImageControllerTest extends TestCase
                     request(),
                     $preset['w'],
                     $preset['h'],
+                    85,
                     'invalid-signature',
                     ltrim($asset->url(), '/'),
                     '.webp'
@@ -570,6 +523,7 @@ class ImageControllerTest extends TestCase
             'width' => 350,
             'height' => 500,
             'format' => '.jpg',
+            'quality' => 85,
         ];
 
         $signature = $signatureFactory->generateSignature($asset->url(), $params);
@@ -602,6 +556,7 @@ class ImageControllerTest extends TestCase
                 Request::create('/'),
                 350,
                 500,
+                85,
                 $signature,
                 ltrim($asset->url(), '/'),
                 '.jpg'

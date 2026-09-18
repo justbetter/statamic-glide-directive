@@ -20,14 +20,13 @@ class ImageController extends Controller
 
     protected array $params;
 
-    protected bool $qualityOverridden = false;
-
     public function __construct(protected Server $server) {}
 
     public function getImageByPreset(
         Request $request,
         int $width,
         int $height,
+        int $quality,
         string $signature,
         string $file,
         string $format
@@ -40,15 +39,11 @@ class ImageController extends Controller
             abort(404);
         }
 
-        $this->qualityOverridden = $request->has('quality');
-
         $this->params = [
             'w' => $width,
             'h' => $height,
             'fm' => $format,
-            'q' => $this->qualityOverridden
-                ? max(0, min(100, $request->integer('quality')))
-                : config('justbetter.glide-directive.quality', 85),
+            'q' => $quality,
             's' => $signature,
         ];
 
@@ -69,6 +64,7 @@ class ImageController extends Controller
                 's' => $signature,
                 'width' => $width,
                 'height' => $height,
+                'quality' => $this->params['q'],
                 'format' => '.'.$format,
             ]);
         } catch (SignatureException $e) {
@@ -144,16 +140,16 @@ class ImageController extends Controller
     {
         $width = (int) $this->params['w'];
         $height = (int) $this->params['h'];
+        $quality = (int) $this->params['q'];
         $signature = trim($this->params['s'], '/');
         $format = ltrim($this->params['fm'], '.');
 
         $assetUrl = ltrim($this->asset?->url() ?? '', '/');
 
-        $qualitySegment = $this->qualityOverridden ? ((int) $this->params['q']).'/' : '';
 
         return $width.'/'
             .$height.'/'
-            .$qualitySegment
+            .$quality.'/'
             .$signature.'/'
             .$assetUrl.'.'.$format;
     }
