@@ -11,6 +11,10 @@ return [
         'jpg' => 'image/jpeg',
     ],
 
+    // The Glide/Intervention encode quality (0-100) used for every generated resize.
+    // Lower this to trade image fidelity for smaller downloads.
+    'quality' => 85,
+
     // Set the cache prefix to use for the image source sets.
     'cache_prefix' => 'img',
 

@@ -12,10 +12,11 @@ $patterns = [
     'format' => '\..+',
     'height' => '\d+',
     'width' => '\d+',
+    'quality' => '\d+',
 ];
 
 Route::get(
-    config('justbetter.glide-directive.cache_prefix').'/'.config('justbetter.glide-directive.storage_prefix').'/{width}/{height}/{s}/{file}{format}',
+    config('justbetter.glide-directive.cache_prefix').'/'.config('justbetter.glide-directive.storage_prefix').'/{width}/{height}/{quality}/{s}/{file}{format}',
     [ImageController::class, 'getImageByPreset']
 )
     ->where($patterns)
