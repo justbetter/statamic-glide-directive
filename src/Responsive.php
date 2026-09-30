@@ -55,6 +55,8 @@ class Responsive
 
     protected static function cropAndResize(Asset $asset, int $width, int $height, ?int $quality = null): array
     {
+        $retinaWidth = $width * 2;
+        $retinaHeight = $height * 2;
         $formats = config('justbetter.glide-directive.default_formats');
 
         $srcsetParts = [];
@@ -62,15 +64,14 @@ class Responsive
             $srcsetParts[$format] = [];
 
             $url = self::getGlideUrl($asset, $width, $height, $format, $quality);
-
-            $url = url()->query($url, ['crop' => 1]);
-            $srcsetParts[$format][] = "{$url} {$width}w";
-
-            $url = self::getGlideUrl($asset, $width * 2, $height * 2, $format, $quality);
             $url = url()->query($url, ['crop' => 1]);
 
-            $width = $width * 2;
             $srcsetParts[$format][] = "{$url} {$width}w";
+
+            $url = self::getGlideUrl($asset, $retinaWidth, $retinaHeight, $format, $quality);
+            $url = url()->query($url, ['crop' => 1]);
+
+            $srcsetParts[$format][] = "{$url} {$retinaWidth}w";
         }
 
         return $srcsetParts;

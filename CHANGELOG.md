@@ -1,6 +1,11 @@
 # Changelog 
 
-[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/...3.3.2)
+[Unreleased changes](https://github.com/justbetter/statamic-glide-directive/compare/3.4.0...3.4.0)
+## [3.4.0](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.4.0) - 2026-09-22
+
+### Changed
+- Avoid doubling width for every format (#42)
+
 ## [3.3.2](https://github.com/justbetter/statamic-glide-directive/releases/tag/3.3.2) - 2026-06-29
 
 ### Changed
