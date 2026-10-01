@@ -4,7 +4,6 @@ namespace JustBetter\GlideDirective;
 
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use League\Glide\Signatures\SignatureFactory;
 use Statamic\Assets\Asset;
 use Statamic\Fields\Value;
 
@@ -32,7 +31,7 @@ class Responsive
 
         return view($view, [
             'image' => $asset,
-            'srcsets' => self::buildSrcsets($asset, $arguments['ratio'] ?? null, $arguments['width'] ?? null, $arguments['height'] ?? null),
+            'srcsets' => in_array($asset->extension(), ['svg', 'gif']) ? [] : self::buildSrcsets($asset, $arguments['ratio'] ?? null, $arguments['width'] ?? null, $arguments['height'] ?? null),
             'attributes' => self::getAttributeBag($arguments),
             'class' => $arguments['class'] ?? '',
             'alt' => $arguments['alt'] ?? ($asset->get('alt') ?? ''),
@@ -40,6 +39,8 @@ class Responsive
             'height' => $arguments['height'] ?? $asset->height(),
             'styleAttr' => $styleAttr ?? '',
             'sizes' => $sizes,
+            'loading' => $arguments['loading'] ?? 'lazy',
+            'mimeTypes' => config('justbetter.glide-directive.default_formats'),
         ]);
     }
 
@@ -55,19 +56,20 @@ class Responsive
     protected static function cropAndResize(Asset $asset, int $width, int $height): array
     {
         $formats = config('justbetter.glide-directive.default_formats');
+        $urlGenerator = new GlideUrlGenerator($asset);
 
         $srcsetParts = [];
         foreach ($formats as $format => $mimeType) {
             $srcsetParts[$format] = [];
 
-            $url = self::getGlideUrl($asset, $width, $height, $format);
+            $url = $urlGenerator->generate($width, $height, $format);
             $url = url()->query($url, ['crop' => 1]);
             $srcsetParts[$format][] = "{$url} {$width}w";
 
             $retinaWidth = $width * 2;
             $retinaHeight = $height * 2;
 
-            $url = self::getGlideUrl($asset, $retinaWidth, $retinaHeight, $format);
+            $url = $urlGenerator->generate($retinaWidth, $retinaHeight, $format);
             $url = url()->query($url, ['crop' => 1]);
             $srcsetParts[$format][] = "{$url} {$retinaWidth}w";
         }
@@ -91,11 +93,21 @@ class Responsive
         $useRatio = $ratio ?? $originalRatio;
 
         $formats = config('justbetter.glide-directive.default_formats');
+        $originalWidth = $asset->width();
+
+        // Limit widths to original asset width
+        $widths = collect(self::getWidths())
+            ->when($originalWidth, fn ($collection) => $collection
+                ->filter(fn (int $width) => $width < $originalWidth)
+                ->push((int) $originalWidth)
+            );
+
+        $urlGenerator = new GlideUrlGenerator($asset);
         $srcsetParts = [];
         foreach ($formats as $format => $mimeType) {
             $srcsetParts[$format] = [];
 
-            foreach (self::getWidths() as $width) {
+            foreach ($widths as $width) {
                 $height = $useRatio ? (int) round($width / $useRatio) : null;
 
                 $srcset = [
@@ -104,7 +116,7 @@ class Responsive
                     'ratio' => $useRatio,
                 ];
 
-                $url = self::getGlideUrl($asset, $width, $height, $format);
+                $url = $urlGenerator->generate($width, $height, $format);
                 $srcsetParts[$format][] = "{$url} {$srcset['width']}w";
             }
         }
@@ -129,18 +141,12 @@ class Responsive
 
     public static function getGlideUrl(Asset $asset, int $width, ?int $height, string $format): string
     {
-        $signatureFactory = SignatureFactory::create(config('app.key'));
-
-        $params = $signatureFactory->addSignature($asset->url(), ['width' => $width, 'height' => $height, 'format' => '.'.$format]);
-
-        return route('glide-image.preset', array_merge($params, [
-            'file' => ltrim($asset->url(), '/'),
-        ]));
+        return (new GlideUrlGenerator($asset))->generate($width, $height, $format);
     }
 
     protected static function getAttributeBag(array $arguments): string
     {
-        $excludedAttributes = ['src', 'class', 'alt', 'width', 'height', 'onload', 'max_width', 'rendered_width'];
+        $excludedAttributes = ['src', 'class', 'alt', 'width', 'height', 'loading', 'onload', 'max_width', 'rendered_width'];
 
         return collect($arguments)
             ->filter(fn ($value, $key) => ! in_array($key, $excludedAttributes))
