@@ -11,7 +11,7 @@
 
         @foreach($srcsets as $type=>$srcset)
             <source
-                type="image/{{ $type }}"
+                type="{{ $mimeTypes[$type] ?? 'image/'.$type }}"
                 srcset="{{ implode(', ', $srcset) }}"
                 sizes="{{ $sizes ?? 'auto' }}"
             >
@@ -23,7 +23,7 @@
             alt="{{ $alt }}"
             width="{{ $width }}"
             height="{{ $height }}"
-            loading="lazy"
+            loading="{{ $loading }}"
             {!! $styleAttr ?? '' !!}
             class="{{ $class }}"
         />
