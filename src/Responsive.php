@@ -93,16 +93,14 @@ class Responsive
         $useRatio = $ratio ?? $originalRatio;
 
         $formats = config('justbetter.glide-directive.default_formats');
-        $widths = self::getWidths();
         $originalWidth = $asset->width();
 
-        if ($originalWidth) {
-            $widths = collect($widths)
+        // Limit widths to original asset width
+        $widths = collect(self::getWidths())
+            ->when($originalWidth, fn($collection) => $collection
                 ->filter(fn (int $width) => $width < $originalWidth)
                 ->push((int) $originalWidth)
-                ->values()
-                ->all();
-        }
+            );
 
         $urlGenerator = new GlideUrlGenerator($asset);
         $srcsetParts = [];
