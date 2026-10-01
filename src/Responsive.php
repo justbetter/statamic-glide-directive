@@ -97,7 +97,7 @@ class Responsive
 
         // Limit widths to original asset width
         $widths = collect(self::getWidths())
-            ->when($originalWidth, fn($collection) => $collection
+            ->when($originalWidth, fn ($collection) => $collection
                 ->filter(fn (int $width) => $width < $originalWidth)
                 ->push((int) $originalWidth)
             );
