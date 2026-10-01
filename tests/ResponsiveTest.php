@@ -131,6 +131,58 @@ class ResponsiveTest extends TestCase
         $asset->delete();
     }
 
+    #[Test]
+    public function it_does_not_generate_widths_larger_than_the_original(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $view = Responsive::handle($asset);
+
+        /* @phpstan-ignore-next-line */
+        foreach ($view->getData()['srcsets'] as $srcset) {
+            $this->assertSame([320, 480, 640, 768, 1024, 1280], $this->extractSrcsetWidths(implode(', ', $srcset)));
+        }
+
+        $asset->delete();
+    }
+
+    #[Test]
+    public function it_uses_the_configured_mime_type_for_sources(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $view = Responsive::handle($asset);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+
+        $this->assertStringContainsString('type="image/jpeg"', $rendered);
+        $this->assertStringNotContainsString('type="image/jpg"', $rendered);
+
+        $asset->delete();
+    }
+
+    #[Test]
+    public function it_renders_a_single_loading_attribute(): void
+    {
+        $asset = $this->uploadTestAsset('upload.png');
+
+        $view = Responsive::handle($asset, ['loading' => 'eager']);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+
+        $this->assertSame(1, substr_count($rendered, 'loading='));
+        $this->assertStringContainsString('loading="eager"', $rendered);
+
+        $view = Responsive::handle($asset);
+        /* @phpstan-ignore-next-line */
+        $rendered = $view->render();
+
+        $this->assertSame(1, substr_count($rendered, 'loading='));
+        $this->assertStringContainsString('loading="lazy"', $rendered);
+
+        $asset->delete();
+    }
+
     protected function extractSrcsetWidths(string $srcset): array
     {
         preg_match_all('/\s(\d+)w/', $srcset, $matches);

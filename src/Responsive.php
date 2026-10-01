@@ -94,6 +94,16 @@ class Responsive
 
         $formats = config('justbetter.glide-directive.default_formats');
         $widths = self::getWidths();
+        $originalWidth = $asset->width();
+
+        if ($originalWidth) {
+            $widths = collect($widths)
+                ->filter(fn (int $width) => $width < $originalWidth)
+                ->push((int) $originalWidth)
+                ->values()
+                ->all();
+        }
+
         $urlGenerator = new GlideUrlGenerator($asset);
         $srcsetParts = [];
         foreach ($formats as $format => $mimeType) {
