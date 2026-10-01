@@ -39,6 +39,8 @@ class Responsive
             'height' => $arguments['height'] ?? $asset->height(),
             'styleAttr' => $styleAttr ?? '',
             'sizes' => $sizes,
+            'loading' => $arguments['loading'] ?? 'lazy',
+            'mimeTypes' => config('justbetter.glide-directive.default_formats'),
         ]);
     }
 
@@ -136,7 +138,7 @@ class Responsive
 
     protected static function getAttributeBag(array $arguments): string
     {
-        $excludedAttributes = ['src', 'class', 'alt', 'width', 'height', 'onload', 'max_width', 'rendered_width'];
+        $excludedAttributes = ['src', 'class', 'alt', 'width', 'height', 'loading', 'onload', 'max_width', 'rendered_width'];
 
         return collect($arguments)
             ->filter(fn ($value, $key) => ! in_array($key, $excludedAttributes))
